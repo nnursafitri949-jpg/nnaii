@@ -1,71 +1,63 @@
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Background Remover Pro</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#f0f6ff',
-                            100: '#e0edff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        }
+                        brand: { 50: '#f0f6ff', 100: '#e0edff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    keyframes: {
+                        'pop-in': { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+                        'pulse-ring': { '0%, 100%': { boxShadow: '0 0 0 0 rgba(16, 185, 129, 0.6)' }, '50%': { boxShadow: '0 0 0 12px rgba(16, 185, 129, 0)' } },
+                        'shake': { '0%, 100%': { transform: 'translateX(0)' }, '25%': { transform: 'translateX(-6px)' }, '75%': { transform: 'translateX(6px)' } }
+                    },
+                    animation: {
+                        'pop-in': 'pop-in 0.3s ease-out',
+                        'pulse-ring': 'pulse-ring 1.2s ease-out infinite',
+                        'shake': 'shake 0.4s ease-out'
                     }
                 }
             }
         }
     </script>
+
     <style>
-        /* Pattern Catur untuk indikator transparan */
         .checkerboard-bg {
             background-color: #f8fafc;
-            background-image: 
-                linear-gradient(45deg, #cbd5e1 25%, transparent 25%), 
-                linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #cbd5e1 75%), 
+            background-image:
+                linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
                 linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.4);
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.2); border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.4); }
+        .shadow-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.35); }
+        #main-canvas.touch-none { touch-action: none; }
+        .tool-btn-active { background-color: #334155; color: #fff; }
+        .thumb { -webkit-appearance: none; height: 4px; border-radius: 999px; background: #334155; }
+        .thumb::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+        .thumb::-moz-range-thumb { width: 16px; height: 16px; border: none; border-radius: 50%; background: #3b82f6; cursor: pointer; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-white">
 
-    <!-- Header / Navbar -->
+    <!-- Header -->
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -77,12 +69,10 @@
                     <p class="text-xs text-slate-400 mt-0.5">Hapus Latar Belakang Gambar Instan</p>
                 </div>
             </div>
-
             <div class="flex items-center space-x-3">
                 <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> 100% In-Browser AI
                 </span>
-                <!-- Tombol Fullscreen -->
                 <button id="fullscreen-btn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-3 rounded-lg transition border border-slate-700 flex items-center gap-1.5" title="Toggle Fullscreen">
                     <i class="fa-solid fa-expand" id="fullscreen-icon"></i>
                     <span class="hidden md:inline">Layar Penuh</span>
@@ -94,29 +84,22 @@
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 flex flex-col min-h-0">
 
-        <!-- Area Upload (Tampil jika belum ada gambar) -->
+        <!-- Upload Section -->
         <div id="upload-section" class="flex-1 flex flex-col justify-center items-center my-4 sm:my-8">
             <div class="w-full max-w-2xl bg-slate-800/50 border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-3xl p-6 sm:p-12 text-center transition-all duration-300 shadow-2xl relative group cursor-pointer" id="drop-zone">
                 <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                
                 <div class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 group-hover:bg-brand-600 group-hover:border-brand-500 transition-all duration-300 text-brand-500 group-hover:text-white shadow-xl">
                     <i class="fa-solid fa-cloud-arrow-up text-2xl sm:text-3xl"></i>
                 </div>
-
                 <h3 class="text-lg sm:text-xl font-bold text-white mb-2">Unggah Gambar Anda</h3>
                 <p class="text-slate-400 text-xs sm:text-sm mb-6 max-w-md mx-auto">
                     Tarik dan lepas gambar di sini, atau klik untuk memilih file dari perangkat Anda. Support JPG, PNG, WebP.
                 </p>
-
                 <div class="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-medium text-xs sm:text-sm rounded-xl transition shadow-lg shadow-brand-600/30">
-                    <i class="fa-solid fa-image"></i>
-                    <span>Pilih Gambar</span>
+                    <i class="fa-solid fa-image"></i><span>Pilih Gambar</span>
                 </div>
-
-                <!-- Contoh Gambar -->
                 <div class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-800/80">
                     <p class="text-xs text-slate-500 font-medium mb-3">Atau coba dengan gambar sampel:</p>
                     <div class="flex justify-center gap-3">
@@ -134,15 +117,14 @@
             </div>
         </div>
 
-        <!-- Editor Section (Tampil setelah gambar dipilih) -->
+        <!-- Editor Section -->
         <div id="editor-section" class="hidden flex-1 flex-col lg:flex-row gap-4 sm:gap-6 h-full min-h-0">
-            
-            <!-- Left Workspace (Canvas / Editor View) -->
+
+            <!-- Workspace -->
             <div class="flex-1 flex flex-col bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden relative min-h-[350px] sm:min-h-[450px]">
-                
-                <!-- Toolbar Atas Kanvas -->
+
+                <!-- Toolbar -->
                 <div class="bg-slate-800/90 border-b border-slate-700/60 p-2 sm:p-3 flex flex-wrap items-center justify-between gap-2 z-10">
-                    <!-- Mode Selector -->
                     <div class="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-700/80 w-full sm:w-auto justify-center sm:justify-start">
                         <button id="mode-auto-btn" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-sm">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> AI Auto
@@ -151,38 +133,40 @@
                             <i class="fa-solid fa-paintbrush"></i> Manual
                         </button>
                         <button id="mode-compare-btn" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-sliders"></i> Perbandingan
+                            <i class="fa-solid fa-sliders"></i> Banding
                         </button>
                     </div>
 
-                    <!-- Tools Manual -->
+                    <!-- Engine Badge -->
+                    <div id="engine-badge" class="hidden sm:flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border bg-slate-900 border-slate-700 text-slate-400 font-medium">
+                        <i class="fa-solid fa-microchip"></i>
+                        <span id="engine-badge-text">Menunggu...</span>
+                    </div>
+
                     <div id="manual-tools" class="hidden flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
                         <div class="flex bg-slate-900 rounded-xl p-1 border border-slate-700/80">
-                            <button id="tool-erase" class="p-1.5 px-2.5 rounded-lg text-xs bg-slate-700 text-white flex items-center gap-1" title="Hapus">
+                            <button id="tool-erase" class="p-1.5 px-2.5 rounded-lg text-xs tool-btn-active flex items-center gap-1" title="Hapus">
                                 <i class="fa-solid fa-eraser"></i> Eraser
                             </button>
                             <button id="tool-restore" class="p-1.5 px-2.5 rounded-lg text-xs text-slate-400 hover:text-white flex items-center gap-1" title="Pulihkan">
                                 <i class="fa-solid fa-rotate-left"></i> Restore
                             </button>
                         </div>
-
                         <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700/80 text-xs">
                             <span class="text-slate-400">Ukuran:</span>
                             <input type="range" id="brush-size" min="5" max="100" value="30" class="w-16 sm:w-20 accent-brand-500 cursor-pointer">
                             <span id="brush-size-val" class="text-slate-300 w-5 text-center">30</span>
                         </div>
-
                         <div class="flex items-center gap-1 ml-auto sm:ml-0">
-                            <button id="undo-btn" class="p-1.5 text-slate-400 hover:text-white bg-slate-900 border border-slate-700/80 rounded-xl w-8 h-8 flex items-center justify-center transition" title="Undo">
+                            <button id="undo-btn" class="p-1.5 text-slate-400 hover:text-white bg-slate-900 border border-slate-700/80 rounded-xl w-8 h-8 flex items-center justify-center transition" title="Undo (Ctrl+Z)">
                                 <i class="fa-solid fa-reply"></i>
                             </button>
-                            <button id="redo-btn" class="p-1.5 text-slate-400 hover:text-white bg-slate-900 border border-slate-700/80 rounded-xl w-8 h-8 flex items-center justify-center transition" title="Redo">
+                            <button id="redo-btn" class="p-1.5 text-slate-400 hover:text-white bg-slate-900 border border-slate-700/80 rounded-xl w-8 h-8 flex items-center justify-center transition" title="Redo (Ctrl+Y)">
                                 <i class="fa-solid fa-share"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Zoom Controls -->
                     <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700/80 text-xs text-slate-400 ml-auto">
                         <button id="zoom-out" class="p-1 hover:text-white"><i class="fa-solid fa-minus"></i></button>
                         <span id="zoom-val" class="px-1 text-slate-300 min-w-[36px] text-center text-[11px]">100%</span>
@@ -191,33 +175,57 @@
                     </div>
                 </div>
 
-                <!-- Viewport Editor Canvas -->
-                <div class="flex-1 relative overflow-hidden flex items-center justify-center p-2 sm:p-4 checkerboard-bg select-none touch-none" id="canvas-container">
-                    
-                    <!-- Loading & Progress Overlay -->
-                    <div id="ai-loading" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-30 flex flex-col items-center justify-center hidden p-4">
-                        <div class="relative w-16 h-16 sm:w-20 sm:h-20 mb-4">
-                            <div class="absolute inset-0 rounded-full border-4 border-slate-700"></div>
-                            <div class="absolute inset-0 rounded-full border-4 border-brand-500 border-t-transparent animate-spin"></div>
-                            <i class="fa-solid fa-wand-magic-sparkles absolute inset-0 flex items-center justify-center text-brand-400 text-lg sm:text-xl"></i>
+                <!-- Viewport -->
+                <div class="flex-1 relative overflow-auto flex items-center justify-center p-2 sm:p-4 checkerboard-bg select-none touch-none" id="canvas-container">
+                    <!-- Overlay status (loading / success / error) -->
+                    <div id="ai-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 hidden flex-col items-center justify-center p-4">
+                        <!-- Loading -->
+                        <div id="ai-state-loading" class="flex flex-col items-center">
+                            <div class="relative w-16 h-16 sm:w-20 sm:h-20 mb-4">
+                                <div class="absolute inset-0 rounded-full border-4 border-slate-700"></div>
+                                <div class="absolute inset-0 rounded-full border-4 border-brand-500 border-t-transparent animate-spin"></div>
+                                <i class="fa-solid fa-wand-magic-sparkles absolute inset-0 flex items-center justify-center text-brand-400 text-lg sm:text-xl"></i>
+                            </div>
+                            <h4 class="text-base sm:text-lg font-bold text-white mb-1" id="loading-title">Memproses...</h4>
+                            <p class="text-xs text-slate-400 max-w-xs text-center px-4 mb-4" id="loading-desc">Menyiapkan proses</p>
+                            <div class="w-full max-w-xs bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+                                <div id="loading-progress-bar" class="bg-gradient-to-r from-brand-600 to-emerald-400 h-full w-0 transition-all duration-200"></div>
+                            </div>
+                            <span id="loading-progress-text" class="text-xs text-brand-400 font-mono mt-2 font-semibold">0%</span>
                         </div>
-                        <h4 class="text-base sm:text-lg font-bold text-white mb-1" id="loading-title">Memproses Gambar...</h4>
-                        <p class="text-xs text-slate-400 max-w-xs text-center px-4 mb-4" id="loading-desc">AI sedang memisahkan subjek dari latar belakang.</p>
-                        
-                        <!-- Progress Bar Container -->
-                        <div class="w-full max-w-xs bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
-                            <div id="loading-progress-bar" class="bg-gradient-to-r from-brand-600 to-emerald-400 h-full w-0 transition-all duration-200"></div>
+                        <!-- Success -->
+                        <div id="ai-state-success" class="hidden flex-col items-center animate-pop-in">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mb-4 animate-pulse-ring">
+                                <i class="fa-solid fa-check text-emerald-400 text-3xl sm:text-4xl"></i>
+                            </div>
+                            <h4 class="text-base sm:text-lg font-bold text-emerald-400 mb-1">Berhasil!</h4>
+                            <p class="text-xs text-slate-400 max-w-xs text-center px-4" id="success-desc">Latar belakang berhasil dihapus</p>
                         </div>
-                        <span id="loading-progress-text" class="text-xs text-brand-400 font-mono mt-2 font-semibold">0%</span>
+                        <!-- Error -->
+                        <div id="ai-state-error" class="hidden flex-col items-center animate-pop-in">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-red-500/20 border-2 border-red-400 flex items-center justify-center mb-4 animate-shake">
+                                <i class="fa-solid fa-xmark text-red-400 text-3xl sm:text-4xl"></i>
+                            </div>
+                            <h4 class="text-base sm:text-lg font-bold text-red-400 mb-1">Proses Gagal</h4>
+                            <p class="text-xs text-slate-400 max-w-xs text-center px-4 mb-4" id="error-desc">Terjadi kesalahan</p>
+                            <div class="flex gap-2">
+                                <button id="retry-btn" class="text-xs px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-rotate-right"></i> Coba Lagi
+                                </button>
+                                <button id="use-fallback-btn" class="text-xs px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-bolt"></i> Mode Cepat
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Canvas Utama -->
-                    <div id="canvas-wrapper" class="relative shadow-2xl transition-transform duration-75 origin-center max-w-full max-h-full flex items-center justify-center">
-                        <canvas id="main-canvas" class="max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain block rounded-lg touch-none"></canvas>
+                    <!-- Canvas wrapper -->
+                    <div id="canvas-wrapper" class="relative shadow-2xl transition-transform duration-75 origin-center">
+                        <canvas id="main-canvas" class="block max-w-full max-h-[60vh] sm:max-h-[70vh] rounded-lg touch-none"></canvas>
 
-                        <!-- Visual Slider Perbandingan (Mode Compare) -->
+                        <!-- Compare slider -->
                         <div id="compare-slider-container" class="absolute inset-0 pointer-events-none hidden overflow-hidden rounded-lg">
-                            <img id="compare-orig-img" class="absolute inset-0 w-full h-full object-contain pointer-events-none" alt="Original">
+                            <img id="compare-orig-img" class="absolute inset-0 w-full h-full object-fill pointer-events-none" alt="Original">
                             <div id="compare-divider" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] cursor-ew-resize pointer-events-auto" style="left: 50%;">
                                 <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 sm:w-8 sm:h-8 bg-white text-slate-900 rounded-full flex items-center justify-center shadow-lg border border-slate-200 text-xs">
                                     <i class="fa-solid fa-arrows-left-right"></i>
@@ -228,25 +236,21 @@
                 </div>
             </div>
 
-            <!-- Right Sidebar Panel -->
+            <!-- Sidebar -->
             <div class="w-full lg:w-80 flex flex-col gap-4">
-                
-                <!-- Card Panel: Latar Belakang Baru -->
                 <div class="bg-slate-800/60 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
                     <h3 class="text-sm font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-palette text-brand-400"></i> Ganti Latar Belakang
                     </h3>
 
-                    <!-- Tab Pilihan Tipe BG -->
                     <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-700/60 text-xs text-center">
                         <button id="bg-tab-transparent" class="bg-slate-800 text-white font-medium py-1.5 rounded-lg transition">Transparan</button>
                         <button id="bg-tab-color" class="text-slate-400 hover:text-white font-medium py-1.5 rounded-lg transition">Warna</button>
                         <button id="bg-tab-image" class="text-slate-400 hover:text-white font-medium py-1.5 rounded-lg transition">Gambar</button>
                     </div>
 
-                    <!-- Option: Warna Solid & Gradasi -->
                     <div id="bg-color-options" class="hidden flex-col gap-3">
-                        <label class="text-xs text-slate-400">Warna Solid Populer:</label>
+                        <label class="text-xs text-slate-400">Warna Populer:</label>
                         <div class="grid grid-cols-6 gap-2">
                             <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-white shadow-sm" data-color="#ffffff"></button>
                             <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-black shadow-sm" data-color="#000000"></button>
@@ -256,12 +260,11 @@
                             <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-amber-400 shadow-sm" data-color="#fbbf24"></button>
                         </div>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="text-xs text-slate-400">Custom Color:</span>
+                            <span class="text-xs text-slate-400">Custom:</span>
                             <input type="color" id="custom-color-picker" value="#3b82f6" class="w-8 h-8 bg-transparent border-0 rounded cursor-pointer">
                         </div>
                     </div>
 
-                    <!-- Option: Gambar Background Custom -->
                     <div id="bg-image-options" class="hidden flex-col gap-3">
                         <label class="text-xs text-slate-400">Unggah Gambar Latar:</label>
                         <label class="flex items-center justify-center border border-dashed border-slate-700 hover:border-brand-500 bg-slate-900/50 rounded-xl p-3 cursor-pointer text-xs text-slate-300 hover:text-white transition gap-2">
@@ -270,23 +273,20 @@
                         </label>
                     </div>
 
-                    <!-- Kontrol Toleransi / Deteksi AI -->
                     <div class="pt-3 border-t border-slate-700/60">
                         <div class="flex justify-between text-xs mb-1">
-                            <span class="text-slate-400">Sensitivitas AI Matte:</span>
+                            <span class="text-slate-400">Sensitivitas Deteksi:</span>
                             <span id="threshold-val" class="text-slate-300 font-mono">50%</span>
                         </div>
-                        <input type="range" id="ai-threshold" min="10" max="90" value="50" class="w-full accent-brand-500 cursor-pointer">
-                        <p class="text-[10px] text-slate-500 mt-1">Fokus pintar pada Wajah/Kulit, Pencahayaan Subjek & Kontur Tepi Objek.</p>
+                        <input type="range" id="ai-threshold" min="10" max="90" value="50" class="w-full accent-brand-500 cursor-pointer thumb">
+                        <p class="text-[10px] text-slate-500 mt-1">Nilai lebih tinggi = deteksi lebih agresif menghapus latar.</p>
                     </div>
                 </div>
 
-                <!-- Panel Download / Ekspor -->
                 <div class="bg-slate-800/60 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
                     <h3 class="text-sm font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-download text-emerald-400"></i> Ekspor & Simpan
                     </h3>
-
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <button id="download-png" class="flex flex-col items-center justify-center p-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium transition shadow-lg shadow-brand-600/20 gap-1">
                             <i class="fa-solid fa-file-image text-base"></i>
@@ -296,801 +296,905 @@
                         <button id="download-jpg" class="flex flex-col items-center justify-center p-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition gap-1">
                             <i class="fa-solid fa-file-jpg text-base"></i>
                             <span>Download JPG</span>
-                            <span class="text-[10px] text-slate-300">Dengan BG Color</span>
+                            <span class="text-[10px] text-slate-300">Dengan BG</span>
                         </button>
                     </div>
                 </div>
-
             </div>
         </div>
-
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
-        <p>&copy; 2026 BG Removers AI Pro - Web Application Client-Side Only.</p>
+        <p>&copy; 2026 BG Removers AI Pro — Web Application Client-Side.</p>
     </footer>
 
-    <!-- Notification Toast Box -->
+    <!-- Toast -->
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white border border-slate-700 px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 flex items-center gap-3 z-50 max-w-sm">
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <div>
             <h5 id="toast-title" class="text-xs font-bold text-white">Notifikasi</h5>
-            <p id="toast-msg" class="text-xs text-slate-300">Pesan notifikasi...</p>
+            <p id="toast-msg" class="text-xs text-slate-300">Pesan</p>
         </div>
     </div>
 
-    <!-- JavaScript Application Logic -->
     <script>
-        // Store Application State
-        const state = {
-            originalImage: null,
-            maskCanvas: null,
-            bgType: 'transparent', // 'transparent', 'color', 'image'
-            bgColor: '#ffffff',
-            bgImage: null,
-            activeMode: 'auto', // 'auto', 'manual', 'compare'
-            activeTool: 'erase', // 'erase', 'restore'
-            brushSize: 30,
-            zoom: 1,
-            undoStack: [],
-            redoStack: [],
-            maxUndo: 15
-        };
+    // =====================================================
+    // STATE
+    // =====================================================
+    const state = {
+        originalImage: null,
+        originalBlob: null,
+        originalSrc: null,
+        maskCanvas: null,
+        bgType: 'transparent',
+        bgColor: '#ffffff',
+        bgImage: null,
+        activeMode: 'auto',
+        activeTool: 'erase',
+        brushSize: 30,
+        zoom: 1,
+        undoStack: [],
+        redoStack: [],
+        maxUndo: 20,
+        aiEngine: undefined, // undefined=not loaded, null=unavailable, function=available
+        engineUsed: null,    // 'ai' | 'heuristic'
+        isProcessing: false,
+        thresholdDebounce: null
+    };
 
-        // DOM Elements
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const uploadSection = document.getElementById('upload-section');
-        const editorSection = document.getElementById('editor-section');
-        const resetAppBtn = document.getElementById('reset-app-btn');
+    // =====================================================
+    // DOM
+    // =====================================================
+    const $ = id => document.getElementById(id);
+    const dropZone = $('drop-zone'), fileInput = $('file-input');
+    const uploadSection = $('upload-section'), editorSection = $('editor-section');
+    const resetAppBtn = $('reset-app-btn');
+    const mainCanvas = $('main-canvas'), ctx = mainCanvas.getContext('2d');
+    const canvasContainer = $('canvas-container'), canvasWrapper = $('canvas-wrapper');
+    const modeAutoBtn = $('mode-auto-btn'), modeManualBtn = $('mode-manual-btn'), modeCompareBtn = $('mode-compare-btn');
+    const manualTools = $('manual-tools'), toolErase = $('tool-erase'), toolRestore = $('tool-restore');
+    const brushSize = $('brush-size'), brushSizeVal = $('brush-size-val');
+    const undoBtn = $('undo-btn'), redoBtn = $('redo-btn');
+    const zoomIn = $('zoom-in'), zoomOut = $('zoom-out'), zoomReset = $('zoom-reset'), zoomVal = $('zoom-val');
+    const compareSliderContainer = $('compare-slider-container'), compareOrigImg = $('compare-orig-img'), compareDivider = $('compare-divider');
+    const bgTabTransparent = $('bg-tab-transparent'), bgTabColor = $('bg-tab-color'), bgTabImage = $('bg-tab-image');
+    const bgColorOptions = $('bg-color-options'), bgImageOptions = $('bg-image-options');
+    const customColorPicker = $('custom-color-picker'), customBgInput = $('custom-bg-input');
+    const aiThreshold = $('ai-threshold'), thresholdVal = $('threshold-val');
+    const downloadPng = $('download-png'), downloadJpg = $('download-jpg');
+    const aiOverlay = $('ai-overlay');
+    const aiStateLoading = $('ai-state-loading'), aiStateSuccess = $('ai-state-success'), aiStateError = $('ai-state-error');
+    const loadingTitle = $('loading-title'), loadingDesc = $('loading-desc');
+    const loadingProgressBar = $('loading-progress-bar'), loadingProgressText = $('loading-progress-text');
+    const successDesc = $('success-desc'), errorDesc = $('error-desc');
+    const retryBtn = $('retry-btn'), useFallbackBtn = $('use-fallback-btn');
+    const engineBadge = $('engine-badge'), engineBadgeText = $('engine-badge-text');
+    const fullscreenBtn = $('fullscreen-btn'), fullscreenIcon = $('fullscreen-icon');
+    const toast = $('toast'), toastTitle = $('toast-title'), toastMsg = $('toast-msg'), toastIcon = $('toast-icon');
 
-        const mainCanvas = document.getElementById('main-canvas');
-        const ctx = mainCanvas.getContext('2d');
-        const canvasContainer = document.getElementById('canvas-container');
-        const canvasWrapper = document.getElementById('canvas-wrapper');
+    // =====================================================
+    // INIT
+    // =====================================================
+    window.addEventListener('DOMContentLoaded', () => {
+        initUploadHandlers();
+        initToolbarHandlers();
+        initCanvasDrawing();
+        initCompareSlider();
+        initFullscreen();
+        initKeyboardShortcuts();
+    });
 
-        const modeAutoBtn = document.getElementById('mode-auto-btn');
-        const modeManualBtn = document.getElementById('mode-manual-btn');
-        const modeCompareBtn = document.getElementById('mode-compare-btn');
-
-        const manualTools = document.getElementById('manual-tools');
-        const toolErase = document.getElementById('tool-erase');
-        const toolRestore = document.getElementById('tool-restore');
-        const brushSize = document.getElementById('brush-size');
-        const brushSizeVal = document.getElementById('brush-size-val');
-        const undoBtn = document.getElementById('undo-btn');
-        const redoBtn = document.getElementById('redo-btn');
-
-        const zoomIn = document.getElementById('zoom-in');
-        const zoomOut = document.getElementById('zoom-out');
-        const zoomReset = document.getElementById('zoom-reset');
-        const zoomVal = document.getElementById('zoom-val');
-
-        const compareSliderContainer = document.getElementById('compare-slider-container');
-        const compareOrigImg = document.getElementById('compare-orig-img');
-        const compareDivider = document.getElementById('compare-divider');
-
-        const bgTabTransparent = document.getElementById('bg-tab-transparent');
-        const bgTabColor = document.getElementById('bg-tab-color');
-        const bgTabImage = document.getElementById('bg-tab-image');
-        const bgColorOptions = document.getElementById('bg-color-options');
-        const bgImageOptions = document.getElementById('bg-image-options');
-        const customColorPicker = document.getElementById('custom-color-picker');
-        const customBgInput = document.getElementById('custom-bg-input');
-
-        const aiThreshold = document.getElementById('ai-threshold');
-        const thresholdVal = document.getElementById('threshold-val');
-
-        const downloadPng = document.getElementById('download-png');
-        const downloadJpg = document.getElementById('download-jpg');
-
-        const aiLoading = document.getElementById('ai-loading');
-        const loadingTitle = document.getElementById('loading-title');
-        const loadingDesc = document.getElementById('loading-desc');
-        const loadingProgressBar = document.getElementById('loading-progress-bar');
-        const loadingProgressText = document.getElementById('loading-progress-text');
-
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const fullscreenIcon = document.getElementById('fullscreen-icon');
-
-        // Initialize App Event Listeners
-        window.addEventListener('DOMContentLoaded', () => {
-            initUploadHandlers();
-            initToolbarHandlers();
-            initCanvasDrawing();
-            initCompareSlider();
-            initFullscreen();
+    // =====================================================
+    // UPLOAD HANDLERS
+    // =====================================================
+    function initUploadHandlers() {
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) loadImageFromFile(e.target.files[0]);
         });
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-brand-500','bg-slate-800'); });
+        dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('border-brand-500','bg-slate-800'); });
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('border-brand-500','bg-slate-800');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) loadImageFromFile(e.dataTransfer.files[0]);
+        });
+        document.querySelectorAll('.sample-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault(); e.stopPropagation();
+                const src = btn.getAttribute('data-src');
+                if (src) loadImageFromUrl(src);
+            });
+        });
+    }
 
-        // --- Init Upload & Sample Handlers ---
-        function initUploadHandlers() {
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    loadImageFromFile(e.target.files[0]);
-                }
-            });
-
-            // Drag & Drop
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.classList.add('border-brand-500', 'bg-slate-800');
-            });
-            dropZone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('border-brand-500', 'bg-slate-800');
-            });
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('border-brand-500', 'bg-slate-800');
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    loadImageFromFile(e.dataTransfer.files[0]);
-                }
-            });
-
-            // Sample Images
-            document.querySelectorAll('.sample-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const src = btn.getAttribute('data-src');
-                    if (src) loadImageFromUrl(src);
-                });
-            });
+    // =====================================================
+    // IMAGE LOADING
+    // =====================================================
+    function loadImageFromFile(file) {
+        if (!file.type.match('image.*')) {
+            showToast('Format Salah', 'Pilih file gambar (JPG, PNG, WebP).', 'error');
+            return;
         }
-
-        // --- Load Image Functions ---
-        function loadImageFromFile(file) {
-            if (!file.type.match('image.*')) {
-                showToast('Format Salah', 'Harap pilih file gambar (JPG, PNG, WebP).', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            showLoading(true, 'Memuat Gambar...', 'Mempersiapkan gambar untuk diproses', 10);
-            
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    setupEditorWithImage(img, e.target.result);
-                };
-                img.onerror = () => {
-                    showLoading(false);
-                    showToast('Gagal Memuat', 'Tidak dapat membuka file gambar ini.', 'error');
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+        if (file.size > 25 * 1024 * 1024) {
+            showToast('File Terlalu Besar', 'Maksimal 25MB. Coba kompres gambar Anda.', 'error');
+            return;
         }
+        state.originalBlob = file;
+        const url = URL.createObjectURL(file);
+        state.originalSrc = url;
+        showLoadingState('Memuat Gambar...', 'Mempersiapkan gambar...', 5);
+        const img = new Image();
+        img.onload = () => setupEditorWithImage(img, url);
+        img.onerror = () => showErrorState('Gagal memuat gambar. File mungkin rusak.');
+        img.src = url;
+    }
 
-        function loadImageFromUrl(url) {
-            showLoading(true, 'Memuat Sampel...', 'Mengambil gambar sampel', 10);
+    async function loadImageFromUrl(url) {
+        showLoadingState('Memuat Sampel...', 'Mengambil gambar dari server...', 5);
+        try {
+            const resp = await fetch(url, { mode: 'cors' });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const blob = await resp.blob();
+            state.originalBlob = blob;
+            state.originalSrc = url;
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                setupEditorWithImage(img, url);
-            };
-            img.onerror = () => {
-                showLoading(false);
-                showToast('Gagal Memuat Sampel', 'Gagal memuat gambar dari server.', 'error');
-            };
-            img.src = url;
+            img.onload = () => setupEditorWithImage(img, url);
+            img.onerror = () => showErrorState('Gagal decode gambar sampel.');
+            img.src = URL.createObjectURL(blob);
+        } catch (err) {
+            console.error('Sample load failed:', err);
+            showErrorState('Gagal memuat sampel (masalah jaringan/CORS). Coba unggah file sendiri.');
+        }
+    }
+
+    async function setupEditorWithImage(img, srcUrl) {
+        state.originalImage = img;
+
+        // Limit dims
+        const maxDim = 1920;
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+            else { w = Math.round(w * maxDim / h); h = maxDim; }
         }
 
-        function setupEditorWithImage(img, srcUrl) {
-            state.originalImage = img;
-            
-            // Limit Maximum Dimensions for Performance
-            const maxDim = 1920;
-            let w = img.width;
-            let h = img.height;
-            if (w > maxDim || h > maxDim) {
-                if (w > h) {
-                    h = Math.round((h * maxDim) / w);
-                    w = maxDim;
-                } else {
-                    w = Math.round((w * maxDim) / h);
-                    h = maxDim;
-                }
-            }
+        mainCanvas.width = w;
+        mainCanvas.height = h;
 
-            // Canvas & Mask Setup
-            mainCanvas.width = w;
-            mainCanvas.height = h;
+        // Create mask canvas
+        state.maskCanvas = document.createElement('canvas');
+        state.maskCanvas.width = w;
+        state.maskCanvas.height = h;
+        const mctx = state.maskCanvas.getContext('2d');
+        // Initial: full foreground (white) — safe baseline
+        mctx.fillStyle = '#ffffff';
+        mctx.fillRect(0, 0, w, h);
 
-            state.maskCanvas = document.createElement('canvas');
-            state.maskCanvas.width = w;
-            state.maskCanvas.height = h;
+        compareOrigImg.src = state.originalSrc;
 
-            compareOrigImg.src = srcUrl;
+        // Switch UI
+        uploadSection.classList.add('hidden');
+        editorSection.classList.remove('hidden');
+        editorSection.classList.add('flex');
+        resetAppBtn.classList.remove('hidden');
+        resetAppBtn.classList.add('flex');
 
-            // UI Switch
-            uploadSection.classList.add('hidden');
-            editorSection.classList.remove('hidden');
-            editorSection.classList.add('flex');
-            resetAppBtn.classList.remove('hidden');
-            resetAppBtn.classList.add('flex');
+        setZoom(1);
+        state.undoStack = [];
+        state.redoStack = [];
+        pushUndoState(); // Baseline state
 
-            setZoom(1);
-            showLoading(false);
+        renderCanvas();
 
-            // Execute AI BG Removal Automatically
-            processAIRemoval();
+        // Run AI
+        await processAIRemoval();
+    }
+
+    // =====================================================
+    // AI ENGINE (imgly ML + heuristic fallback)
+    // =====================================================
+    async function getAIEngine() {
+        if (state.aiEngine !== undefined) return state.aiEngine;
+        try {
+            updateEngineBadge('loading');
+            const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 25000));
+            const load = import('https://esm.sh/@imgly/background-removal@1.4.5').then(m => m.default || m.removeBackground);
+            const fn = await Promise.race([load, timeout]);
+            state.aiEngine = fn;
+            return fn;
+        } catch (e) {
+            console.warn('AI engine unavailable:', e);
+            state.aiEngine = null;
+            return null;
         }
+    }
 
-        // --- AI Processing dengan Algoritma Tingkat Lanjut (Focus pada Manusia/Kulit, Produk & Lighting) ---
-        function processAIRemoval(saveUndo = true) {
-            if (!state.originalImage || !state.maskCanvas) {
-                showToast('Error', 'Gambar tidak ditemukan.', 'error');
-                return;
-            }
-
-            showLoading(true, 'Memproses Gambar...', 'AI mendeteksi subjek (orang/produk) & pencahayaan kontur', 5);
-
-            let progress = 5;
-            const updateProgress = (val) => {
-                progress = Math.min(100, Math.max(0, val));
-                loadingProgressBar.style.width = `${progress}%`;
-                loadingProgressText.textContent = `${progress}%`;
-            };
-
-            const interval = setInterval(() => {
-                if (progress < 85) {
-                    progress += Math.floor(Math.random() * 15) + 10;
-                    updateProgress(progress);
-                }
-            }, 70);
-
-            setTimeout(() => {
-                try {
-                    clearInterval(interval);
-                    const width = state.maskCanvas.width;
-                    const height = state.maskCanvas.height;
-                    const maskCtx = state.maskCanvas.getContext('2d');
-                    
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = width;
-                    tempCanvas.height = height;
-                    const tempCtx = tempCanvas.getContext('2d');
-                    tempCtx.drawImage(state.originalImage, 0, 0, width, height);
-
-                    const imgData = tempCtx.getImageData(0, 0, width, height);
-                    const data = imgData.data;
-
-                    const maskData = maskCtx.createImageData(width, height);
-                    const mData = maskData.data;
-
-                    // 1. Ambil Sampel Background Lebih Luas (Lingkar Tepi Kiri-Kanan-Atas-Bawah)
-                    const bgSamples = [];
-                    const sampleMargin = Math.max(2, Math.floor(Math.min(width, height) * 0.03));
-                    
-                    for (let x = 0; x < width; x += sampleMargin) {
-                        bgSamples.push(getPixel(data, x, 0, width));
-                        bgSamples.push(getPixel(data, x, height - 1, width));
-                    }
-                    for (let y = 0; y < height; y += sampleMargin) {
-                        bgSamples.push(getPixel(data, 0, y, width));
-                        bgSamples.push(getPixel(data, width - 1, y, width));
-                    }
-
-                    // Sensitivitas AI dari Slider
-                    const sensitivity = parseInt(aiThreshold.value) / 100; // 0.1 s/d 0.9
-                    const thresholdDiff = (1 - sensitivity) * 160 + 20;
-
-                    // 2. Analisis Piksel Berbasis Multi-Fitur
-                    for (let y = 0; y < height; y++) {
-                        for (let x = 0; x < width; x++) {
-                            const idx = (y * width + x) * 4;
-                            const r = data[idx];
-                            const g = data[idx + 1];
-                            const b = data[idx + 2];
-
-                            // A. Jarak Warna ke Sampel Background Minimum
-                            let minBgDiff = 999;
-                            for (let i = 0; i < bgSamples.length; i++) {
-                                const c = bgSamples[i];
-                                const diff = Math.sqrt(
-                                    Math.pow(r - c.r, 2) * 0.3 + 
-                                    Math.pow(g - c.g, 2) * 0.59 + 
-                                    Math.pow(b - c.b, 2) * 0.11
-                                );
-                                if (diff < minBgDiff) minBgDiff = diff;
-                            }
-
-                            // B. Deteksi Warna Kulit Manusia (Human Skin Detection)
-                            const isSkinColor = (r > 60 && g > 40 && b > 20 && 
-                                                 (Math.max(r, g, b) - Math.min(r, g, b) > 12) && 
-                                                 Math.abs(r - g) > 10 && r > g && r > b);
-
-                            // C. Deteksi Fokus Pusat / Objek
-                            const distX = Math.abs(x - width / 2) / (width / 2);
-                            const distY = Math.abs(y - height / 2) / (height / 2);
-                            const centerFactor = 1 - Math.sqrt(distX * distX + distY * distY) * 0.35;
-
-                            // D. Gradient/Gradient Pencahayaan & Kontras Lokal (Edges)
-                            let edgeMag = 0;
-                            if (x > 0 && y > 0 && x < width - 1 && y < height - 1) {
-                                const leftIdx = (y * width + (x - 1)) * 4;
-                                const rightIdx = (y * width + (x + 1)) * 4;
-                                const topIdx = ((y - 1) * width + x) * 4;
-                                const botIdx = ((y + 1) * width + x) * 4;
-
-                                const dx = Math.abs(data[rightIdx] - data[leftIdx]) + 
-                                           Math.abs(data[rightIdx+1] - data[leftIdx+1]) + 
-                                           Math.abs(data[rightIdx+2] - data[leftIdx+2]);
-
-                                const dy = Math.abs(data[botIdx] - data[topIdx]) + 
-                                           Math.abs(data[botIdx+1] - data[topIdx+1]) + 
-                                           Math.abs(data[botIdx+2] - data[topIdx+2]);
-
-                                edgeMag = (dx + dy) / 6;
-                            }
-
-                            // Skor gabungan untuk menentukan Piksel Objek
-                            let subjectScore = (minBgDiff / thresholdDiff) * centerFactor;
-                            if (isSkinColor) subjectScore += 0.45;
-                            if (edgeMag > 25) subjectScore += 0.25;
-
-                            if (subjectScore >= 0.85) {
-                                mData[idx] = 255;
-                                mData[idx + 1] = 255;
-                                mData[idx + 2] = 255;
-                                mData[idx + 3] = 255;
-                            } else {
-                                mData[idx] = 0;
-                                mData[idx + 1] = 0;
-                                mData[idx + 2] = 0;
-                                mData[idx + 3] = 0;
-                            }
-                        }
-                    }
-
-                    maskCtx.putImageData(maskData, 0, 0);
-
-                    if (saveUndo) pushUndoState();
-                    renderCanvas();
-                    
-                    updateProgress(100);
-                    setTimeout(() => {
-                        showLoading(false);
-                        showToast('Berhasil!', 'Segmentasi fokus orang & produk berhasil diproses.', 'success');
-                    }, 200);
-
-                } catch (error) {
-                    clearInterval(interval);
-                    showLoading(false);
-                    showToast('Proses Gagal', 'Terjadi kesalahan saat memproses gambar.', 'error');
-                    console.error("AI Error: ", error);
-                }
-            }, 300);
+    function updateEngineBadge(status) {
+        if (status === 'loading') {
+            engineBadge.className = 'hidden sm:flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border bg-slate-900 border-slate-700 text-slate-400 font-medium';
+            engineBadgeText.textContent = 'Memuat AI...';
+        } else if (status === 'ai') {
+            engineBadge.className = 'hidden sm:flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-medium';
+            engineBadgeText.textContent = 'AI Model';
+            engineBadge.querySelector('i').className = 'fa-solid fa-brain';
+        } else if (status === 'heuristic') {
+            engineBadge.className = 'hidden sm:flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border bg-amber-500/10 border-amber-500/30 text-amber-400 font-medium';
+            engineBadgeText.textContent = 'Mode Cepat';
+            engineBadge.querySelector('i').className = 'fa-solid fa-bolt';
         }
+    }
 
-        function getPixel(data, x, y, width) {
-            const index = (y * width + x) * 4;
-            return { r: data[index], g: data[index + 1], b: data[index + 2] };
+    // =====================================================
+    // PROCESS — try real AI, fallback to heuristic
+    // =====================================================
+    async function processAIRemoval(forceHeuristic = false) {
+        if (state.isProcessing) return;
+        if (!state.originalImage || !state.maskCanvas) {
+            showToast('Error', 'Gambar tidak ditemukan.', 'error');
+            return;
         }
+        state.isProcessing = true;
 
-        // --- Render Canvas utama dengan gabungan BG & Mask ---
-        function renderCanvas() {
-            if (!state.originalImage || !state.maskCanvas) return;
-
-            const w = state.maskCanvas.width;
-            const h = state.maskCanvas.height;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // 1. Gambar Latar Belakang Baru (jika ada)
-            if (state.bgType === 'color') {
-                ctx.fillStyle = state.bgColor;
-                ctx.fillRect(0, 0, w, h);
-            } else if (state.bgType === 'image' && state.bgImage) {
-                ctx.drawImage(state.bgImage, 0, 0, w, h);
-            }
-
-            // 2. Terapkan Masking Subjek Utama
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = w;
-            tempCanvas.height = h;
-            const tempCtx = tempCanvas.getContext('2d');
-
-            tempCtx.drawImage(state.maskCanvas, 0, 0);
-            tempCtx.globalCompositeOperation = 'source-in';
-            tempCtx.drawImage(state.originalImage, 0, 0, w, h);
-
-            // 3. Render potongan subjek ke kanvas utama
-            ctx.drawImage(tempCanvas, 0, 0);
-        }
-
-        // --- Interactive Drawing (Eraser & Restore Tools) ---
-        function initCanvasDrawing() {
-            let isDrawing = false;
-            let lastX = 0;
-            let lastY = 0;
-
-            function getCanvasCoordinates(e) {
-                const rect = mainCanvas.getBoundingClientRect();
-                const scaleX = mainCanvas.width / rect.width;
-                const scaleY = mainCanvas.height / rect.height;
-                
-                let clientX, clientY;
-                if (e.touches && e.touches.length > 0) {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                }
-
-                return {
-                    x: (clientX - rect.left) * scaleX,
-                    y: (clientY - rect.top) * scaleY
-                };
-            }
-
-            function startDraw(e) {
-                if (state.activeMode !== 'manual') return;
-                isDrawing = true;
-                const coords = getCanvasCoordinates(e);
-                lastX = coords.x;
-                lastY = coords.y;
-                draw(e);
-            }
-
-            function draw(e) {
-                if (!isDrawing || state.activeMode !== 'manual') return;
-                if (e.cancelable) e.preventDefault();
-
-                const coords = getCanvasCoordinates(e);
-                const maskCtx = state.maskCanvas.getContext('2d');
-
-                maskCtx.lineWidth = state.brushSize;
-                maskCtx.lineCap = 'round';
-                maskCtx.lineJoin = 'round';
-
-                if (state.activeTool === 'erase') {
-                    maskCtx.globalCompositeOperation = 'destination-out';
-                    maskCtx.beginPath();
-                    maskCtx.moveTo(lastX, lastY);
-                    maskCtx.lineTo(coords.x, coords.y);
-                    maskCtx.stroke();
-                } else if (state.activeTool === 'restore') {
-                    maskCtx.globalCompositeOperation = 'source-over';
-                    maskCtx.fillStyle = '#ffffff';
-                    maskCtx.strokeStyle = '#ffffff';
-                    maskCtx.beginPath();
-                    maskCtx.moveTo(lastX, lastY);
-                    maskCtx.lineTo(coords.x, coords.y);
-                    maskCtx.stroke();
-                }
-
-                lastX = coords.x;
-                lastY = coords.y;
-
-                renderCanvas();
-            }
-
-            function stopDraw() {
-                if (isDrawing) {
-                    isDrawing = false;
-                    pushUndoState();
-                }
-            }
-
-            mainCanvas.addEventListener('mousedown', startDraw);
-            mainCanvas.addEventListener('mousemove', draw);
-            window.addEventListener('mouseup', stopDraw);
-
-            mainCanvas.addEventListener('touchstart', startDraw, { passive: false });
-            mainCanvas.addEventListener('touchmove', draw, { passive: false });
-            window.addEventListener('touchend', stopDraw);
-        }
-
-        // --- Toolbar & UI Event Listeners ---
-        function initToolbarHandlers() {
-            // Mode Selectors
-            modeAutoBtn.addEventListener('click', () => {
-                setMode('auto');
-                processAIRemoval();
-            });
-            modeManualBtn.addEventListener('click', () => setMode('manual'));
-            modeCompareBtn.addEventListener('click', () => setMode('compare'));
-
-            // Tools Manual
-            toolErase.addEventListener('click', () => setTool('erase'));
-            toolRestore.addEventListener('click', () => setTool('restore'));
-
-            brushSize.addEventListener('input', (e) => {
-                state.brushSize = parseInt(e.target.value);
-                brushSizeVal.textContent = state.brushSize;
-            });
-
-            undoBtn.addEventListener('click', undo);
-            redoBtn.addEventListener('click', redo);
-
-            // Zoom Handlers
-            zoomIn.addEventListener('click', () => setZoom(state.zoom + 0.2));
-            zoomOut.addEventListener('click', () => setZoom(state.zoom - 0.2));
-            zoomReset.addEventListener('click', () => setZoom(1));
-
-            // Background Tabs & Options
-            bgTabTransparent.addEventListener('click', () => setBgType('transparent'));
-            bgTabColor.addEventListener('click', () => setBgType('color'));
-            bgTabImage.addEventListener('click', () => setBgType('image'));
-
-            document.querySelectorAll('.bg-color-preset').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    state.bgColor = btn.getAttribute('data-color');
-                    customColorPicker.value = state.bgColor;
-                    renderCanvas();
-                });
-            });
-
-            customColorPicker.addEventListener('input', (e) => {
-                state.bgColor = e.target.value;
-                renderCanvas();
-            });
-
-            customBgInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            state.bgImage = img;
+        try {
+            if (!forceHeuristic) {
+                const engine = await getAIEngine();
+                if (engine) {
+                    showLoadingState('AI Memproses...', 'Mengunduh model (pertama kali) & menganalisis...', 0);
+                    try {
+                        const ok = await runImglyAI(engine);
+                        if (ok) {
+                            state.engineUsed = 'ai';
+                            updateEngineBadge('ai');
+                            pushUndoState();
                             renderCanvas();
-                        };
-                        img.src = ev.target.result;
-                    };
-                    reader.readAsDataURL(e.target.files[0]);
-                }
-            });
-
-            // Threshold AI Slider
-            aiThreshold.addEventListener('input', (e) => {
-                thresholdVal.textContent = `${e.target.value}%`;
-            });
-            aiThreshold.addEventListener('change', () => {
-                processAIRemoval();
-            });
-
-            // Downloads & Reset
-            downloadPng.addEventListener('click', () => exportImage('png'));
-            downloadJpg.addEventListener('click', () => exportImage('jpg'));
-            resetAppBtn.addEventListener('click', resetApp);
-        }
-
-        // --- Fullscreen Toggle Handler ---
-        function initFullscreen() {
-            fullscreenBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().then(() => {
-                        fullscreenIcon.className = 'fa-solid fa-compress';
-                    }).catch(err => {
-                        showToast('Error', 'Layar penuh tidak didukung.', 'error');
-                    });
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen().then(() => {
-                            fullscreenIcon.className = 'fa-solid fa-expand';
-                        });
+                            showSuccessState('Latar belakang dihapus oleh AI Model');
+                            state.isProcessing = false;
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn('imgly inference failed:', e);
                     }
                 }
-            });
+            }
+
+            // Fallback: heuristic
+            updateEngineBadge('heuristic');
+            state.engineUsed = 'heuristic';
+            await runHeuristicRemoval();
+            pushUndoState();
+            renderCanvas();
+            showSuccessState('Latar belakang dihapus (Mode Cepat)');
+        } catch (err) {
+            console.error('Process error:', err);
+            showErrorState(err.message || 'Proses gagal');
+        } finally {
+            state.isProcessing = false;
         }
+    }
 
-        // --- Perbandingan (Compare Slider) ---
-        function initCompareSlider() {
-            let isDragging = false;
+    async function runImglyAI(engine) {
+        const blob = state.originalBlob;
+        if (!blob) throw new Error('Blob gambar tidak tersedia');
 
-            const handleMove = (clientX) => {
-                if (!isDragging || state.activeMode !== 'compare') return;
-                const rect = canvasWrapper.getBoundingClientRect();
-                let offsetX = clientX - rect.left;
-                if (offsetX < 0) offsetX = 0;
-                if (offsetX > rect.width) offsetX = rect.width;
-
-                const percentage = (offsetX / rect.width) * 100;
-                compareDivider.style.left = percentage + '%';
-                compareOrigImg.style.clipPath = `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`;
-            };
-
-            compareDivider.addEventListener('mousedown', () => isDragging = true);
-            window.addEventListener('mouseup', () => isDragging = false);
-            window.addEventListener('mousemove', (e) => handleMove(e.clientX));
-
-            compareDivider.addEventListener('touchstart', () => isDragging = true, { passive: true });
-            window.addEventListener('touchend', () => isDragging = false);
-            window.addEventListener('touchmove', (e) => {
-                if (e.touches && e.touches[0]) {
-                    handleMove(e.touches[0].clientX);
+        const resultBlob = await engine(blob, {
+            output: { format: 'image/png' },
+            progress: (key, current, total) => {
+                const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+                if (key.includes('fetch') || key.includes('download')) {
+                    setProgress(Math.round(pct * 0.4), 'Mengunduh model AI: ' + pct + '%');
+                } else {
+                    setProgress(40 + Math.round(pct * 0.55), 'Menganalisis gambar: ' + pct + '%');
                 }
-            }, { passive: true });
+            }
+        });
+
+        setProgress(98, 'Menyelesaikan mask...');
+
+        const url = URL.createObjectURL(resultBlob);
+        const resultImg = await new Promise((res, rej) => {
+            const im = new Image();
+            im.onload = () => res(im);
+            im.onerror = rej;
+            im.src = url;
+        });
+
+        // Draw result to temp canvas at our working size
+        const w = state.maskCanvas.width, h = state.maskCanvas.height;
+        const tmp = document.createElement('canvas');
+        tmp.width = w; tmp.height = h;
+        const tctx = tmp.getContext('2d');
+        tctx.drawImage(resultImg, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+
+        const srcData = tctx.getImageData(0, 0, w, h).data;
+        const mctx = state.maskCanvas.getContext('2d');
+        const mImgData = mctx.createImageData(w, h);
+        const dst = mImgData.data;
+
+        // Alpha of result = subject opacity. Mask = white with that alpha.
+        for (let i = 0; i < srcData.length; i += 4) {
+            const a = srcData[i + 3];
+            dst[i] = 255; dst[i + 1] = 255; dst[i + 2] = 255; dst[i + 3] = a;
         }
+        mctx.putImageData(mImgData, 0, 0);
 
-        // --- Set Modes & Background Types ---
-        function setMode(mode) {
-            state.activeMode = mode;
+        setProgress(100, 'Selesai');
+        return true;
+    }
 
-            modeAutoBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-white';
-            modeManualBtn.className = modeAutoBtn.className;
-            modeCompareBtn.className = modeAutoBtn.className;
+    // =====================================================
+    // HEURISTIC (improved, downsampled for speed)
+    // =====================================================
+    async function runHeuristicRemoval() {
+        const W = state.maskCanvas.width, H = state.maskCanvas.height;
 
-            manualTools.classList.add('hidden');
-            manualTools.classList.remove('flex');
-            compareSliderContainer.classList.add('hidden');
+        // Downscale for performance
+        const maxProc = 600;
+        const scale = Math.min(1, maxProc / Math.max(W, H));
+        const pw = Math.max(1, Math.round(W * scale));
+        const ph = Math.max(1, Math.round(H * scale));
 
-            if (mode === 'auto') {
-                modeAutoBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-brand-600 text-white shadow-sm';
-            } else if (mode === 'manual') {
-                modeManualBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-brand-600 text-white shadow-sm';
-                manualTools.classList.remove('hidden');
-                manualTools.classList.add('flex');
-                showToast('Mode Manual Aktif', 'Gunakan kursor atau sentuhan jari untuk mengedit secara detail.', 'info');
-            } else if (mode === 'compare') {
-                modeCompareBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-brand-600 text-white shadow-sm';
-                compareSliderContainer.classList.remove('hidden');
+        showLoadingState('Mode Cepat...', 'Menganalisis warna & tepi...', 10);
+
+        const small = document.createElement('canvas');
+        small.width = pw; small.height = ph;
+        const sctx = small.getContext('2d');
+        sctx.drawImage(state.originalImage, 0, 0, pw, ph);
+        const srcData = sctx.getImageData(0, 0, pw, ph).data;
+
+        // Build background palette from edges
+        const palette = buildBackgroundPalette(srcData, pw, ph, 8);
+        setProgress(30, 'Deteksi tepi & objek...');
+
+        // Prepare output mask (at small size)
+        const smallMask = new ImageData(pw, ph);
+        const md = smallMask.data;
+
+        const sensitivity = parseInt(aiThreshold.value) / 100;
+        const thr = 20 + (1 - sensitivity) * 130; // 20..150
+
+        const cx = pw / 2, cy = ph / 2;
+        const maxR = Math.sqrt(cx * cx + cy * cy);
+
+        for (let y = 0; y < ph; y++) {
+            for (let x = 0; x < pw; x++) {
+                const i = (y * pw + x) * 4;
+                const r = srcData[i], g = srcData[i + 1], b = srcData[i + 2];
+
+                // Distance to nearest palette color
+                let minD = Infinity;
+                for (let p = 0; p < palette.length; p++) {
+                    const c = palette[p];
+                    const dr = r - c.r, dg = g - c.g, db = b - c.b;
+                    // Weighted (perceptual-ish)
+                    const d = Math.sqrt(dr*dr * 0.3 + dg*dg * 0.59 + db*db * 0.11);
+                    if (d < minD) minD = d;
+                }
+
+                // Center bias (subject usually near center)
+                const dx = x - cx, dy = y - cy;
+                const distFromCenter = Math.sqrt(dx*dx + dy*dy) / maxR; // 0..1
+                const centerBias = 1 - distFromCenter * 0.3;
+
+                // Skin detection boost
+                const isSkin = (r > 95 && g > 40 && b > 20 &&
+                                r > g && r > b &&
+                                (r - Math.min(g,b)) > 15 &&
+                                Math.abs(r - g) > 10);
+
+                let score = minD / thr * centerBias;
+                if (isSkin) score += 0.4;
+
+                // Edge gradient boost (helps preserve detailed edges)
+                if (x > 1 && y > 1 && x < pw - 1 && y < ph - 1) {
+                    const L = (y * pw + (x - 1)) * 4;
+                    const R = (y * pw + (x + 1)) * 4;
+                    const T = ((y - 1) * pw + x) * 4;
+                    const B = ((y + 1) * pw + x) * 4;
+                    const gx = Math.abs(srcData[R] - srcData[L]) + Math.abs(srcData[R+1] - srcData[L+1]) + Math.abs(srcData[R+2] - srcData[L+2]);
+                    const gy = Math.abs(srcData[B] - srcData[T]) + Math.abs(srcData[B+1] - srcData[T+1]) + Math.abs(srcData[B+2] - srcData[T+2]);
+                    const edge = (gx + gy) / 6;
+                    if (edge > 30) score += 0.2;
+                }
+
+                if (score >= 1.0) {
+                    md[i] = 255; md[i+1] = 255; md[i+2] = 255; md[i+3] = 255;
+                } else if (score > 0.7) {
+                    // soft edge
+                    const a = Math.round((score - 0.7) / 0.3 * 255);
+                    md[i] = 255; md[i+1] = 255; md[i+2] = 255; md[i+3] = a;
+                } else {
+                    md[i+3] = 0;
+                }
             }
         }
 
-        function setTool(tool) {
-            state.activeTool = tool;
-            if (tool === 'erase') {
-                toolErase.className = 'p-1.5 px-2.5 rounded-lg text-xs bg-slate-700 text-white flex items-center gap-1';
-                toolRestore.className = 'p-1.5 px-2.5 rounded-lg text-xs text-slate-400 hover:text-white flex items-center gap-1';
+        setProgress(70, 'Membersihkan tepi...');
+
+        // Apply morphological blur to smooth edges
+        const smallMaskCanvas = document.createElement('canvas');
+        smallMaskCanvas.width = pw; smallMaskCanvas.height = ph;
+        smallMaskCanvas.getContext('2d').putImageData(smallMask, 0, 0);
+
+        // Upscale mask back to full size with smoothing
+        const mctx = state.maskCanvas.getContext('2d');
+        mctx.clearRect(0, 0, W, H);
+        mctx.imageSmoothingEnabled = true;
+        mctx.imageSmoothingQuality = 'high';
+        // 2-pass upscale for smoother result
+        const midCanvas = document.createElement('canvas');
+        midCanvas.width = Math.round(pw * 1.5);
+        midCanvas.height = Math.round(ph * 1.5);
+        const midCtx = midCanvas.getContext('2d');
+        midCtx.imageSmoothingEnabled = true;
+        midCtx.drawImage(smallMaskCanvas, 0, 0, midCanvas.width, midCanvas.height);
+
+        mctx.drawImage(midCanvas, 0, 0, W, H);
+
+        setProgress(100, 'Selesai');
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    function buildBackgroundPalette(data, w, h, k) {
+        // Sample edges
+        const samples = [];
+        const step = Math.max(1, Math.floor(Math.min(w, h) / 100));
+        for (let x = 0; x < w; x += step) {
+            samples.push([data[(0 * w + x) * 4], data[(0 * w + x) * 4 + 1], data[(0 * w + x) * 4 + 2]]);
+            samples.push([data[((h - 1) * w + x) * 4], data[((h - 1) * w + x) * 4 + 1], data[((h - 1) * w + x) * 4 + 2]]);
+        }
+        for (let y = 0; y < h; y += step) {
+            samples.push([data[(y * w + 0) * 4], data[(y * w + 0) * 4 + 1], data[(y * w + 0) * 4 + 2]]);
+            samples.push([data[(y * w + (w - 1)) * 4], data[(y * w + (w - 1)) * 4 + 1], data[(y * w + (w - 1)) * 4 + 2]]);
+        }
+
+        // Simple k-means (few iterations)
+        let centers = [];
+        for (let i = 0; i < k; i++) {
+            const s = samples[Math.floor(i * samples.length / k)];
+            centers.push([s[0], s[1], s[2]]);
+        }
+        for (let iter = 0; iter < 5; iter++) {
+            const sums = centers.map(() => [0, 0, 0, 0]);
+            for (const s of samples) {
+                let best = 0, bestD = Infinity;
+                for (let i = 0; i < centers.length; i++) {
+                    const dr = s[0] - centers[i][0], dg = s[1] - centers[i][1], db = s[2] - centers[i][2];
+                    const d = dr*dr + dg*dg + db*db;
+                    if (d < bestD) { bestD = d; best = i; }
+                }
+                sums[best][0] += s[0]; sums[best][1] += s[1]; sums[best][2] += s[2]; sums[best][3]++;
+            }
+            for (let i = 0; i < centers.length; i++) {
+                if (sums[i][3] > 0) {
+                    centers[i][0] = sums[i][0] / sums[i][3];
+                    centers[i][1] = sums[i][1] / sums[i][3];
+                    centers[i][2] = sums[i][2] / sums[i][3];
+                }
+            }
+        }
+        return centers.map(c => ({ r: c[0], g: c[1], b: c[2] }));
+    }
+
+    // =====================================================
+    // RENDER
+    // =====================================================
+    function renderCanvas() {
+        if (!state.originalImage || !state.maskCanvas) return;
+        const w = state.maskCanvas.width, h = state.maskCanvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        if (state.bgType === 'color') {
+            ctx.fillStyle = state.bgColor;
+            ctx.fillRect(0, 0, w, h);
+        } else if (state.bgType === 'image' && state.bgImage) {
+            // Cover fit
+            const img = state.bgImage;
+            const scale = Math.max(w / img.width, h / img.height);
+            const dw = img.width * scale, dh = img.height * scale;
+            ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+        }
+
+        // Compose subject (mask ∩ original)
+        const tmp = document.createElement('canvas');
+        tmp.width = w; tmp.height = h;
+        const tctx = tmp.getContext('2d');
+        tctx.drawImage(state.maskCanvas, 0, 0);
+        tctx.globalCompositeOperation = 'source-in';
+        tctx.drawImage(state.originalImage, 0, 0, w, h);
+
+        ctx.drawImage(tmp, 0, 0);
+    }
+
+    // =====================================================
+    // DRAWING (manual eraser/restore)
+    // =====================================================
+    function initCanvasDrawing() {
+        let isDrawing = false, lastX = 0, lastY = 0;
+
+        function coords(e) {
+            const rect = mainCanvas.getBoundingClientRect();
+            const sx = mainCanvas.width / rect.width;
+            const sy = mainCanvas.height / rect.height;
+            const t = (e.touches && e.touches[0]) ? e.touches[0] : e;
+            return { x: (t.clientX - rect.left) * sx, y: (t.clientY - rect.top) * sy };
+        }
+
+        function start(e) {
+            if (state.activeMode !== 'manual') return;
+            isDrawing = true;
+            const c = coords(e);
+            lastX = c.x; lastY = c.y;
+            draw(e);
+        }
+        function draw(e) {
+            if (!isDrawing || state.activeMode !== 'manual') return;
+            if (e.cancelable) e.preventDefault();
+            const c = coords(e);
+            const mctx = state.maskCanvas.getContext('2d');
+            mctx.lineWidth = state.brushSize;
+            mctx.lineCap = 'round';
+            mctx.lineJoin = 'round';
+            if (state.activeTool === 'erase') {
+                mctx.globalCompositeOperation = 'destination-out';
+                mctx.strokeStyle = 'rgba(0,0,0,1)';
             } else {
-                toolRestore.className = 'p-1.5 px-2.5 rounded-lg text-xs bg-slate-700 text-white flex items-center gap-1';
-                toolErase.className = 'p-1.5 px-2.5 rounded-lg text-xs text-slate-400 hover:text-white flex items-center gap-1';
+                mctx.globalCompositeOperation = 'source-over';
+                mctx.strokeStyle = '#ffffff';
             }
-        }
-
-        function setBgType(type) {
-            state.bgType = type;
-
-            bgTabTransparent.className = 'text-slate-400 hover:text-white font-medium py-1.5 rounded-lg transition';
-            bgTabColor.className = bgTabTransparent.className;
-            bgTabImage.className = bgTabTransparent.className;
-
-            bgColorOptions.classList.add('hidden');
-            bgColorOptions.classList.remove('flex');
-            bgImageOptions.classList.add('hidden');
-            bgImageOptions.classList.remove('flex');
-
-            if (type === 'transparent') {
-                bgTabTransparent.className = 'bg-slate-800 text-white font-medium py-1.5 rounded-lg transition';
-            } else if (type === 'color') {
-                bgTabColor.className = 'bg-slate-800 text-white font-medium py-1.5 rounded-lg transition';
-                bgColorOptions.classList.remove('hidden');
-                bgColorOptions.classList.add('flex');
-            } else if (type === 'image') {
-                bgTabImage.className = 'bg-slate-800 text-white font-medium py-1.5 rounded-lg transition';
-                bgImageOptions.classList.remove('hidden');
-                bgImageOptions.classList.add('flex');
-            }
+            mctx.beginPath();
+            mctx.moveTo(lastX, lastY);
+            mctx.lineTo(c.x, c.y);
+            mctx.stroke();
+            lastX = c.x; lastY = c.y;
             renderCanvas();
         }
-
-        function setZoom(val) {
-            state.zoom = Math.max(0.5, Math.min(3, val));
-            canvasWrapper.style.transform = `scale(${state.zoom})`;
-            zoomVal.textContent = Math.round(state.zoom * 100) + '%';
-        }
-
-        // --- Undo / Redo Management ---
-        function pushUndoState() {
-            if (!state.maskCanvas) return;
-            const maskCtx = state.maskCanvas.getContext('2d');
-            const imgData = maskCtx.getImageData(0, 0, state.maskCanvas.width, state.maskCanvas.height);
-
-            state.undoStack.push(imgData);
-            if (state.undoStack.length > state.maxUndo) {
-                state.undoStack.shift();
+        function stop() {
+            if (isDrawing) {
+                isDrawing = false;
+                pushUndoState();
             }
-            state.redoStack = [];
         }
 
-        function undo() {
-            if (state.undoStack.length > 1) {
-                state.redoStack.push(state.undoStack.pop());
-                const prevState = state.undoStack[state.undoStack.length - 1];
-                const maskCtx = state.maskCanvas.getContext('2d');
-                maskCtx.putImageData(prevState, 0, 0);
+        mainCanvas.addEventListener('mousedown', start);
+        mainCanvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stop);
+        mainCanvas.addEventListener('touchstart', start, { passive: false });
+        mainCanvas.addEventListener('touchmove', draw, { passive: false });
+        window.addEventListener('touchend', stop);
+    }
+
+    // =====================================================
+    // TOOLBAR HANDLERS
+    // =====================================================
+    function initToolbarHandlers() {
+        modeAutoBtn.addEventListener('click', () => { setMode('auto'); processAIRemoval(); });
+        modeManualBtn.addEventListener('click', () => setMode('manual'));
+        modeCompareBtn.addEventListener('click', () => setMode('compare'));
+
+        toolErase.addEventListener('click', () => setTool('erase'));
+        toolRestore.addEventListener('click', () => setTool('restore'));
+
+        brushSize.addEventListener('input', e => {
+            state.brushSize = parseInt(e.target.value);
+            brushSizeVal.textContent = state.brushSize;
+        });
+
+        undoBtn.addEventListener('click', undo);
+        redoBtn.addEventListener('click', redo);
+
+        zoomIn.addEventListener('click', () => setZoom(state.zoom + 0.2));
+        zoomOut.addEventListener('click', () => setZoom(state.zoom - 0.2));
+        zoomReset.addEventListener('click', () => setZoom(1));
+
+        bgTabTransparent.addEventListener('click', () => setBgType('transparent'));
+        bgTabColor.addEventListener('click', () => setBgType('color'));
+        bgTabImage.addEventListener('click', () => setBgType('image'));
+
+        document.querySelectorAll('.bg-color-preset').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.bgColor = btn.getAttribute('data-color');
+                customColorPicker.value = state.bgColor;
                 renderCanvas();
-                showToast('Undo', 'Langkah sebelumnya dipulihkan.', 'info');
+            });
+        });
+
+        customColorPicker.addEventListener('input', e => {
+            state.bgColor = e.target.value;
+            renderCanvas();
+        });
+
+        customBgInput.addEventListener('change', e => {
+            if (e.target.files && e.target.files[0]) {
+                const r = new FileReader();
+                r.onload = ev => {
+                    const img = new Image();
+                    img.onload = () => { state.bgImage = img; renderCanvas(); };
+                    img.src = ev.target.result;
+                };
+                r.readAsDataURL(e.target.files[0]);
             }
-        }
+        });
 
-        function redo() {
-            if (state.redoStack.length > 0) {
-                const nextState = state.redoStack.pop();
-                state.undoStack.push(nextState);
-                const maskCtx = state.maskCanvas.getContext('2d');
-                maskCtx.putImageData(nextState, 0, 0);
-                renderCanvas();
-                showToast('Redo', 'Perubahan dibatalkan/diulangi.', 'info');
-            }
-        }
+        // Debounced threshold change
+        aiThreshold.addEventListener('input', e => {
+            thresholdVal.textContent = `${e.target.value}%`;
+        });
+        aiThreshold.addEventListener('change', () => {
+            if (state.thresholdDebounce) clearTimeout(state.thresholdDebounce);
+            state.thresholdDebounce = setTimeout(() => processAIRemoval(), 400);
+        });
 
-        // --- Export & Reset ---
-        function exportImage(format) {
-            if (!mainCanvas) return;
+        downloadPng.addEventListener('click', () => exportImage('png'));
+        downloadJpg.addEventListener('click', () => exportImage('jpg'));
+        resetAppBtn.addEventListener('click', resetApp);
 
-            try {
-                const link = document.createElement('a');
-                const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
-                const fileName = `bg-removed-${Date.now()}.${format}`;
+        retryBtn.addEventListener('click', () => processAIRemoval());
+        useFallbackBtn.addEventListener('click', () => processAIRemoval(true));
+    }
 
-                link.download = fileName;
-                link.href = mainCanvas.toDataURL(mimeType, 0.95);
-                link.click();
-
-                showToast('Unduhan Berhasil', `File ${format.toUpperCase()} berhasil disimpan ke perangkat.`, 'success');
-            } catch (err) {
-                showToast('Ekspor Gagal', 'Gagal membuat file unduhan gambar.', 'error');
-            }
-        }
-
-        function resetApp() {
-            state.originalImage = null;
-            state.maskCanvas = null;
-            state.bgImage = null;
-            state.undoStack = [];
-            state.redoStack = [];
-
-            fileInput.value = '';
-            customBgInput.value = '';
-            
-            editorSection.classList.add('hidden');
-            editorSection.classList.remove('flex');
-            uploadSection.classList.remove('hidden');
-            resetAppBtn.classList.add('hidden');
-            resetAppBtn.classList.remove('flex');
-
-            setZoom(1);
-            setMode('auto');
-            setBgType('transparent');
-            showToast('Reset Aplikasi', 'Kanvas telah dibersihkan.', 'info');
-        }
-
-        // --- UI Loading & Toast Helpers ---
-        function showLoading(show, title = '', desc = '', initialProgress = 0) {
-            if (show) {
-                loadingTitle.textContent = title;
-                loadingDesc.textContent = desc;
-                loadingProgressBar.style.width = `${initialProgress}%`;
-                loadingProgressText.textContent = `${initialProgress}%`;
-                aiLoading.classList.remove('hidden');
+    function initFullscreen() {
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen()
+                    .then(() => fullscreenIcon.className = 'fa-solid fa-compress')
+                    .catch(() => showToast('Error', 'Layar penuh tidak didukung.', 'error'));
             } else {
-                aiLoading.classList.add('hidden');
+                document.exitFullscreen().then(() => fullscreenIcon.className = 'fa-solid fa-expand');
             }
-        }
+        });
+        // Fix icon on ESC
+        document.addEventListener('fullscreenchange', () => {
+            fullscreenIcon.className = document.fullscreenElement ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+        });
+    }
 
-        function showToast(title, message, type = 'info') {
-            const toast = document.getElementById('toast');
-            const toastTitle = document.getElementById('toast-title');
-            const toastMsg = document.getElementById('toast-msg');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastTitle.textContent = title;
-            toastMsg.textContent = message;
-
-            if (type === 'success') {
-                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
-            } else if (type === 'error') {
-                toastIcon.className = 'fa-solid fa-circle-xmark text-red-400 text-lg';
-            } else {
-                toastIcon.className = 'fa-solid fa-circle-info text-brand-400 text-lg';
+    function initKeyboardShortcuts() {
+        document.addEventListener('keydown', e => {
+            const isEditing = editorSection.classList.contains('flex');
+            if (!isEditing) return;
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
+                e.preventDefault(); undo();
+            } else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+                e.preventDefault(); redo();
             }
+        });
+    }
 
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
+    // =====================================================
+    // COMPARE SLIDER
+    // =====================================================
+    function initCompareSlider() {
+        let dragging = false;
+        const setPos = (clientX) => {
+            const rect = canvasWrapper.getBoundingClientRect();
+            let ox = clientX - rect.left;
+            ox = Math.max(0, Math.min(rect.width, ox));
+            const pct = (ox / rect.width) * 100;
+            compareDivider.style.left = pct + '%';
+            compareOrigImg.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+        };
+        compareDivider.addEventListener('mousedown', () => dragging = true);
+        window.addEventListener('mouseup', () => dragging = false);
+        window.addEventListener('mousemove', e => { if (dragging) setPos(e.clientX); });
+        compareDivider.addEventListener('touchstart', () => dragging = true, { passive: true });
+        window.addEventListener('touchend', () => dragging = false);
+        window.addEventListener('touchmove', e => {
+            if (dragging && e.touches[0]) setPos(e.touches[0].clientX);
+        }, { passive: true });
+    }
 
-            if (window.toastTimeout) clearTimeout(window.toastTimeout);
-            window.toastTimeout = setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3500);
+    // =====================================================
+    // UI STATE
+    // =====================================================
+    function setMode(mode) {
+        state.activeMode = mode;
+        const base = 'px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1.5';
+        const active = base + ' bg-brand-600 text-white shadow-sm';
+        const inactive = base + ' text-slate-400 hover:text-white';
+        modeAutoBtn.className = mode === 'auto' ? active : inactive;
+        modeManualBtn.className = mode === 'manual' ? active : inactive;
+        modeCompareBtn.className = mode === 'compare' ? active : inactive;
+
+        manualTools.classList.add('hidden');
+        manualTools.classList.remove('flex');
+        compareSliderContainer.classList.add('hidden');
+        compareOrigImg.style.clipPath = '';
+
+        if (mode === 'manual') {
+            manualTools.classList.remove('hidden');
+            manualTools.classList.add('flex');
+            showToast('Mode Manual', 'Gunakan kursor untuk edit detail.', 'info');
+        } else if (mode === 'compare') {
+            compareSliderContainer.classList.remove('hidden');
+            compareDivider.style.left = '50%';
+            compareOrigImg.style.clipPath = 'inset(0 50% 0 0)';
         }
+    }
+
+    function setTool(tool) {
+        state.activeTool = tool;
+        const on = 'p-1.5 px-2.5 rounded-lg text-xs tool-btn-active flex items-center gap-1';
+        const off = 'p-1.5 px-2.5 rounded-lg text-xs text-slate-400 hover:text-white flex items-center gap-1';
+        toolErase.className = tool === 'erase' ? on : off;
+        toolRestore.className = tool === 'restore' ? on : off;
+    }
+
+    function setBgType(type) {
+        state.bgType = type;
+        const active = 'bg-slate-800 text-white font-medium py-1.5 rounded-lg transition';
+        const inactive = 'text-slate-400 hover:text-white font-medium py-1.5 rounded-lg transition';
+        bgTabTransparent.className = type === 'transparent' ? active : inactive;
+        bgTabColor.className = type === 'color' ? active : inactive;
+        bgTabImage.className = type === 'image' ? active : inactive;
+
+        bgColorOptions.classList.add('hidden'); bgColorOptions.classList.remove('flex');
+        bgImageOptions.classList.add('hidden'); bgImageOptions.classList.remove('flex');
+
+        if (type === 'color') { bgColorOptions.classList.remove('hidden'); bgColorOptions.classList.add('flex'); }
+        else if (type === 'image') { bgImageOptions.classList.remove('hidden'); bgImageOptions.classList.add('flex'); }
+        renderCanvas();
+    }
+
+    function setZoom(v) {
+        state.zoom = Math.max(0.5, Math.min(3, v));
+        canvasWrapper.style.transform = `scale(${state.zoom})`;
+        zoomVal.textContent = Math.round(state.zoom * 100) + '%';
+    }
+
+    // =====================================================
+    // UNDO / REDO
+    // =====================================================
+    function pushUndoState() {
+        if (!state.maskCanvas) return;
+        const mctx = state.maskCanvas.getContext('2d');
+        const data = mctx.getImageData(0, 0, state.maskCanvas.width, state.maskCanvas.height);
+        state.undoStack.push(data);
+        if (state.undoStack.length > state.maxUndo) state.undoStack.shift();
+        state.redoStack = [];
+    }
+    function undo() {
+        if (state.undoStack.length > 1) {
+            state.redoStack.push(state.undoStack.pop());
+            const prev = state.undoStack[state.undoStack.length - 1];
+            state.maskCanvas.getContext('2d').putImageData(prev, 0, 0);
+            renderCanvas();
+        } else {
+            showToast('Undo', 'Tidak ada langkah sebelumnya.', 'info');
+        }
+    }
+    function redo() {
+        if (state.redoStack.length > 0) {
+            const next = state.redoStack.pop();
+            state.undoStack.push(next);
+            state.maskCanvas.getContext('2d').putImageData(next, 0, 0);
+            renderCanvas();
+        } else {
+            showToast('Redo', 'Tidak ada langkah untuk diulang.', 'info');
+        }
+    }
+
+    // =====================================================
+    // EXPORT & RESET
+    // =====================================================
+    function exportImage(format) {
+        if (!mainCanvas.width) return;
+        try {
+            // For JPG: if bg is transparent, use white
+            let src = mainCanvas;
+            if (format === 'jpg') {
+                const tmp = document.createElement('canvas');
+                tmp.width = mainCanvas.width;
+                tmp.height = mainCanvas.height;
+                const tctx = tmp.getContext('2d');
+                tctx.fillStyle = '#ffffff';
+                tctx.fillRect(0, 0, tmp.width, tmp.height);
+                tctx.drawImage(mainCanvas, 0, 0);
+                src = tmp;
+            }
+            const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+            const name = `bg-removed-${Date.now()}.${format}`;
+            const link = document.createElement('a');
+            link.download = name;
+            link.href = src.toDataURL(mime, 0.95);
+            link.click();
+            showToast('Berhasil', `File ${format.toUpperCase()} tersimpan.`, 'success');
+        } catch (e) {
+            showToast('Ekspor Gagal', 'Terjadi kesalahan saat menyimpan.', 'error');
+        }
+    }
+
+    function resetApp() {
+        state.originalImage = null;
+        state.originalBlob = null;
+        state.originalSrc = null;
+        state.maskCanvas = null;
+        state.bgImage = null;
+        state.undoStack = [];
+        state.redoStack = [];
+
+        fileInput.value = '';
+        customBgInput.value = '';
+
+        editorSection.classList.add('hidden');
+        editorSection.classList.remove('flex');
+        uploadSection.classList.remove('hidden');
+        resetAppBtn.classList.add('hidden');
+        resetAppBtn.classList.remove('flex');
+
+        setZoom(1);
+        setMode('auto');
+        setBgType('transparent');
+        aiOverlay.classList.add('hidden');
+        aiOverlay.classList.remove('flex');
+        showToast('Reset', 'Kanvas dibersihkan.', 'info');
+    }
+
+    // =====================================================
+    // STATUS HELPERS
+    // =====================================================
+    function setProgress(pct, msg) {
+        pct = Math.max(0, Math.min(100, pct));
+        loadingProgressBar.style.width = pct + '%';
+        loadingProgressText.textContent = pct + '%';
+        if (msg) loadingDesc.textContent = msg;
+    }
+
+    function showOverlay() {
+        aiOverlay.classList.remove('hidden');
+        aiOverlay.classList.add('flex');
+    }
+    function hideOverlay() {
+        aiOverlay.classList.add('hidden');
+        aiOverlay.classList.remove('flex');
+    }
+
+    function showLoadingState(title, desc, pct = 0) {
+        aiStateLoading.classList.remove('hidden');
+        aiStateLoading.classList.add('flex');
+        aiStateSuccess.classList.add('hidden'); aiStateSuccess.classList.remove('flex');
+        aiStateError.classList.add('hidden'); aiStateError.classList.remove('flex');
+        loadingTitle.textContent = title;
+        loadingDesc.textContent = desc;
+        setProgress(pct);
+        showOverlay();
+    }
+
+    function showSuccessState(msg) {
+        aiStateLoading.classList.add('hidden'); aiStateLoading.classList.remove('flex');
+        aiStateError.classList.add('hidden'); aiStateError.classList.remove('flex');
+        aiStateSuccess.classList.remove('hidden'); aiStateSuccess.classList.add('flex');
+        successDesc.textContent = msg;
+        showOverlay();
+        setTimeout(hideOverlay, 1400);
+        showToast('Berhasil!', msg, 'success');
+    }
+
+    function showErrorState(msg) {
+        aiStateLoading.classList.add('hidden'); aiStateLoading.classList.remove('flex');
+        aiStateSuccess.classList.add('hidden'); aiStateSuccess.classList.remove('flex');
+        aiStateError.classList.remove('hidden'); aiStateError.classList.add('flex');
+        errorDesc.textContent = msg;
+        showOverlay();
+        showToast('Proses Gagal', msg, 'error');
+    }
+
+    function showToast(title, message, type = 'info') {
+        toastTitle.textContent = title;
+        toastMsg.textContent = message;
+        if (type === 'success') toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+        else if (type === 'error') toastIcon.className = 'fa-solid fa-circle-xmark text-red-400 text-lg';
+        else toastIcon.className = 'fa-solid fa-circle-info text-brand-400 text-lg';
+
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        if (window._toastTimer) clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(() => {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3500);
+    }
     </script>
 </body>
 </html>
-```
