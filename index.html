@@ -1,1 +1,824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Background Remover Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f6ff',
+                            100: '#e0edff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Pattern Catur untuk indikator transparan */
+        .checkerboard-bg {
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(45deg, #cbd5e1 25%, transparent 25%), 
+                linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #cbd5e1 75%), 
+                linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid font-bold fa-wand-magic-sparkles text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-none text-white tracking-tight">BG Removers<span class="text-brand-500">.AI</span></h1>
+                    <p class="text-xs text-slate-400 mt-0.5">Hapus Latar Belakang Gambar Instan</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> 100% In-Browser AI
+                </span>
+                <!-- Tombol Fullscreen -->
+                <button id="fullscreen-btn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-3 rounded-lg transition border border-slate-700 flex items-center gap-1.5" title="Toggle Fullscreen">
+                    <i class="fa-solid fa-expand" id="fullscreen-icon"></i>
+                    <span class="hidden md:inline">Layar Penuh</span>
+                </button>
+                <button id="reset-app-btn" class="hidden text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-3 rounded-lg transition border border-slate-700 items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 flex flex-col min-h-0">
+
+        <!-- Area Upload (Tampil jika belum ada gambar) -->
+        <div id="upload-section" class="flex-1 flex flex-col justify-center items-center my-4 sm:my-8">
+            <div class="w-full max-w-2xl bg-slate-800/50 border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-3xl p-6 sm:p-12 text-center transition-all duration-300 shadow-2xl relative group cursor-pointer" id="drop-zone">
+                <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                
+                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 group-hover:bg-brand-600 group-hover:border-brand-500 transition-all duration-300 text-brand-500 group-hover:text-white shadow-xl">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl sm:text-3xl"></i>
+                </div>
+
+                <h3 class="text-lg sm:text-xl font-bold text-white mb-2">Unggah Gambar Anda</h3>
+                <p class="text-slate-400 text-xs sm:text-sm mb-6 max-w-md mx-auto">
+                    Tarik dan lepas gambar di sini, atau klik untuk memilih file dari perangkat Anda. Support JPG, PNG, WebP.
+                </p>
+
+                <div class="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-medium text-xs sm:text-sm rounded-xl transition shadow-lg shadow-brand-600/30">
+                    <i class="fa-solid fa-image"></i>
+                    <span>Pilih Gambar</span>
+                </div>
+
+                <!-- Contoh Gambar -->
+                <div class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-800/80">
+                    <p class="text-xs text-slate-500 font-medium mb-3">Atau coba dengan gambar sampel:</p>
+                    <div class="flex justify-center gap-3">
+                        <button type="button" class="sample-btn hover:opacity-80 transition rounded-lg overflow-hidden border border-slate-700" data-src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Sample 1" class="w-10 h-10 sm:w-12 sm:h-12 object-cover">
+                        </button>
+                        <button type="button" class="sample-btn hover:opacity-80 transition rounded-lg overflow-hidden border border-slate-700" data-src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Sample 2" class="w-10 h-10 sm:w-12 sm:h-12 object-cover">
+                        </button>
+                        <button type="button" class="sample-btn hover:opacity-80 transition rounded-lg overflow-hidden border border-slate-700" data-src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80">
+                            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=100&q=80" alt="Sample 3" class="w-10 h-10 sm:w-12 sm:h-12 object-cover">
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor Section (Tampil setelah gambar dipilih) -->
+        <div id="editor-section" class="hidden flex-1 flex-col lg:flex-row gap-4 sm:gap-6 h-full min-h-0">
+            
+            <!-- Left Workspace (Canvas / Editor View) -->
+            <div class="flex-1 flex flex-col bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden relative min-h-[350px] sm:min-h-[450px]">
+                
+                <!-- Toolbar Atas Kanvas (Responsif & Touch Friendly) -->
+                <div class="bg-slate-800/90 border-b border-slate-700/60 p-2 sm:p-3 flex flex-wrap items-center justify-between gap-2 z-10">
+                    <!-- Mode Selector -->
+                    <div class="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-700/80 w-full sm:w-auto justify-center sm:justify-start">
+                        <button id="mode-auto-btn" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Auto
+                        </button>
+                        <button id="mode-manual-btn" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-paintbrush"></i> Manual
+                        </button>
+                        <button id="mode-compare-btn" class="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-sliders"></i> Perbandingan
+                        </button>
+                    </div>
+
+                    <!-- Tools Manual (Hidden secara default) -->
+                    <div id="manual-tools" class="hidden flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+                        <div class="flex bg-slate-900 rounded-xl p-1 border border-slate-700/80">
+                            <button id="tool-erase" class="p-1.5 px-2.5 rounded-lg text-xs bg-slate-700 text-white flex items-center gap-1" title="Hapus">
+                                <i class="fa-solid fa-eraser"></i> Eraser
+                            </button>
+                            <button id="tool-restore" class="p-1.5 px-2.5 rounded-lg text-xs text-slate-400 hover:text-white flex items-center gap-1" title="Pulihkan">
+                                <i class="fa-solid fa-rotate-left"></i> Restore
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700/80 text-xs">
+                            <span class="text-slate-400">Ukuran:</span>
+                            <input type="range" id="brush-size" min="5" max="100" value="30" class="w-16 sm:w-20 accent-brand-500 cursor-pointer">
+                            <span id="brush-size-val" class="text-slate-300 w-5 text-center">30</span>
+                        </div>
+
+                        <div class="flex items-center gap-1 ml-auto sm:ml-0">
+                            <button id="undo-btn" class="p-1.5 text-slate-400 hover:text-white bg-slate-900 border border-slate-700/80 rounded-xl w-8 h-8 flex items-center justify-center transition" title="Undo">
+                                <i class="fa-solid fa-reply"></i>
+                            </button>
+                            <button id="redo-btn" class="p-1.5 text-slate-400 hover:text-white bg-slate-900 border border-slate-700/80 rounded-xl w-8 h-8 flex items-center justify-center transition" title="Redo">
+                                <i class="fa-solid fa-share"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Zoom / Fit Controls -->
+                    <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-slate-700/80 text-xs text-slate-400 ml-auto">
+                        <button id="zoom-out" class="p-1 hover:text-white"><i class="fa-solid fa-minus"></i></button>
+                        <span id="zoom-val" class="px-1 text-slate-300 min-w-[36px] text-center text-[11px]">100%</span>
+                        <button id="zoom-in" class="p-1 hover:text-white"><i class="fa-solid fa-plus"></i></button>
+                        <button id="zoom-reset" class="p-1 hover:text-white border-l border-slate-700 ml-1 pl-1.5" title="Reset Zoom"><i class="fa-solid fa-expand"></i></button>
+                    </div>
+                </div>
+
+                <!-- Viewport Editor Canvas -->
+                <div class="flex-1 relative overflow-hidden flex items-center justify-center p-2 sm:p-4 checkerboard-bg select-none touch-none" id="canvas-container">
+                    
+                    <!-- Loading Indicator Overlay -->
+                    <div id="ai-loading" class="absolute inset-0 bg-slate-950/75 backdrop-blur-sm z-30 flex flex-col items-center justify-center hidden">
+                        <div class="relative w-16 h-16 sm:w-20 sm:h-20 mb-4">
+                            <div class="absolute inset-0 rounded-full border-4 border-slate-700"></div>
+                            <div class="absolute inset-0 rounded-full border-4 border-brand-500 border-t-transparent animate-spin"></div>
+                            <i class="fa-solid fa-wand-magic-sparkles absolute inset-0 flex items-center justify-center text-brand-400 text-lg sm:text-xl"></i>
+                        </div>
+                        <h4 class="text-base sm:text-lg font-bold text-white mb-1" id="loading-title">Memproses Gambar...</h4>
+                        <p class="text-xs text-slate-400 max-w-xs text-center px-4" id="loading-desc">AI sedang memisahkan subjek dari latar belakang.</p>
+                    </div>
+
+                    <!-- Canvas Utama -->
+                    <div id="canvas-wrapper" class="relative shadow-2xl transition-transform duration-75 origin-center max-w-full max-h-full flex items-center justify-center">
+                        <canvas id="main-canvas" class="max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain block rounded-lg touch-none"></canvas>
+
+                        <!-- Visual Slider Perbandingan (Mode Compare) -->
+                        <div id="compare-slider-container" class="absolute inset-0 pointer-events-none hidden overflow-hidden rounded-lg">
+                            <img id="compare-orig-img" class="absolute inset-0 w-full h-full object-contain pointer-events-none" alt="Original">
+                            <div id="compare-divider" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] cursor-ew-resize pointer-events-auto" style="left: 50%;">
+                                <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 sm:w-8 sm:h-8 bg-white text-slate-900 rounded-full flex items-center justify-center shadow-lg border border-slate-200 text-xs">
+                                    <i class="fa-solid fa-arrows-left-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar Panel (Pengaturan & Background Customization) -->
+            <div class="w-full lg:w-80 flex flex-col gap-4">
+                
+                <!-- Card Panel: Latar Belakang Baru -->
+                <div class="bg-slate-800/60 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-brand-400"></i> Ganti Latar Belakang
+                    </h3>
+
+                    <!-- Tab Pilihan Tipe BG -->
+                    <div class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-700/60 text-xs text-center">
+                        <button id="bg-tab-transparent" class="bg-slate-800 text-white font-medium py-1.5 rounded-lg transition">Transparan</button>
+                        <button id="bg-tab-color" class="text-slate-400 hover:text-white font-medium py-1.5 rounded-lg transition">Warna</button>
+                        <button id="bg-tab-image" class="text-slate-400 hover:text-white font-medium py-1.5 rounded-lg transition">Gambar</button>
+                    </div>
+
+                    <!-- Option: Warna Solid & Gradasi -->
+                    <div id="bg-color-options" class="hidden flex-col gap-3">
+                        <label class="text-xs text-slate-400">Warna Solid Populer:</label>
+                        <div class="grid grid-cols-6 gap-2">
+                            <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-white shadow-sm" data-color="#ffffff"></button>
+                            <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-black shadow-sm" data-color="#000000"></button>
+                            <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-red-500 shadow-sm" data-color="#ef4444"></button>
+                            <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-blue-500 shadow-sm" data-color="#3b82f6"></button>
+                            <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-emerald-500 shadow-sm" data-color="#10b981"></button>
+                            <button class="bg-color-preset w-8 h-8 rounded-full border border-slate-600 bg-amber-400 shadow-sm" data-color="#fbbf24"></button>
+                        </div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs text-slate-400">Custom Color:</span>
+                            <input type="color" id="custom-color-picker" value="#3b82f6" class="w-8 h-8 bg-transparent border-0 rounded cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Option: Gambar Background Custom -->
+                    <div id="bg-image-options" class="hidden flex-col gap-3">
+                        <label class="text-xs text-slate-400">Unggah Gambar Latar:</label>
+                        <label class="flex items-center justify-center border border-dashed border-slate-700 hover:border-brand-500 bg-slate-900/50 rounded-xl p-3 cursor-pointer text-xs text-slate-300 hover:text-white transition gap-2">
+                            <i class="fa-solid fa-image"></i> Pilih Gambar BG
+                            <input type="file" id="custom-bg-input" accept="image/*" class="hidden">
+                        </label>
+                    </div>
+
+                    <!-- Kontrol Toleransi / Deteksi AI -->
+                    <div class="pt-3 border-t border-slate-700/60">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-400">Sensitivitas AI Matte:</span>
+                            <span id="threshold-val" class="text-slate-300 font-mono">50%</span>
+                        </div>
+                        <input type="range" id="ai-threshold" min="10" max="90" value="50" class="w-full accent-brand-500 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Panel Download / Ekspor -->
+                <div class="bg-slate-800/60 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-download text-emerald-400"></i> Ekspor & Simpan
+                    </h3>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <button id="download-png" class="flex flex-col items-center justify-center p-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium transition shadow-lg shadow-brand-600/20 gap-1">
+                            <i class="fa-solid fa-file-image text-base"></i>
+                            <span>Download PNG</span>
+                            <span class="text-[10px] text-brand-200">Transparan HD</span>
+                        </button>
+                        <button id="download-jpg" class="flex flex-col items-center justify-center p-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition gap-1">
+                            <i class="fa-solid fa-file-jpg text-base"></i>
+                            <span>Download JPG</span>
+                            <span class="text-[10px] text-slate-300">Dengan BG Color</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
+        <p>&copy; 2026 BG Removers AI Pro - Web Application Client-Side Only.</p>
+    </footer>
+
+    <!-- Notification Toast Box -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white border border-slate-700 px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 flex items-center gap-3 z-50">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-msg" class="text-xs font-medium">Pesan notifikasi...</span>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Store Application State
+        const state = {
+            originalImage: null,
+            maskCanvas: null,
+            processedCanvas: null,
+            bgType: 'transparent',
+            bgColor: '#ffffff',
+            bgImage: null,
+            zoom: 1,
+            activeMode: 'auto',
+            activeTool: 'erase',
+            brushSize: 30,
+            undoStack: [],
+            redoStack: [],
+            maxUndo: 10
+        };
+
+        // DOM Elements
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadSection = document.getElementById('upload-section');
+        const editorSection = document.getElementById('editor-section');
+        const resetAppBtn = document.getElementById('reset-app-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const fullscreenIcon = document.getElementById('fullscreen-icon');
+        
+        const mainCanvas = document.getElementById('main-canvas');
+        const ctx = mainCanvas.getContext('2d');
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        const canvasContainer = document.getElementById('canvas-container');
+        
+        const aiLoading = document.getElementById('ai-loading');
+        const loadingTitle = document.getElementById('loading-title');
+        const loadingDesc = document.getElementById('loading-desc');
+
+        // Buttons & Modes
+        const modeAutoBtn = document.getElementById('mode-auto-btn');
+        const modeManualBtn = document.getElementById('mode-manual-btn');
+        const modeCompareBtn = document.getElementById('mode-compare-btn');
+        const manualTools = document.getElementById('manual-tools');
+        
+        const toolErase = document.getElementById('tool-erase');
+        const toolRestore = document.getElementById('tool-restore');
+        const brushSizeInput = document.getElementById('brush-size');
+        const brushSizeVal = document.getElementById('brush-size-val');
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const zoomResetBtn = document.getElementById('zoom-reset');
+        const zoomVal = document.getElementById('zoom-val');
+
+        // BG Controls
+        const bgTabTransparent = document.getElementById('bg-tab-transparent');
+        const bgTabColor = document.getElementById('bg-tab-color');
+        const bgTabImage = document.getElementById('bg-tab-image');
+        const bgColorOptions = document.getElementById('bg-color-options');
+        const bgImageOptions = document.getElementById('bg-image-options');
+        const customColorPicker = document.getElementById('custom-color-picker');
+        const customBgInput = document.getElementById('custom-bg-input');
+        const aiThreshold = document.getElementById('ai-threshold');
+        const thresholdVal = document.getElementById('threshold-val');
+
+        // Compare Slider Elements
+        const compareSliderContainer = document.getElementById('compare-slider-container');
+        const compareOrigImg = document.getElementById('compare-orig-img');
+        const compareDivider = document.getElementById('compare-divider');
+
+        // Downloads
+        const downloadPng = document.getElementById('download-png');
+        const downloadJpg = document.getElementById('download-jpg');
+
+        // --- Event Listeners & Inisialisasi ---
+        window.onload = function() {
+            initEvents();
+        };
+
+        function initEvents() {
+            // Fullscreen Handler
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fullscreenIcon.className = 'fa-solid fa-compress';
+                } else {
+                    fullscreenIcon.className = 'fa-solid fa-expand';
+                }
+            });
+
+            // Drag and Drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-brand-500', 'bg-brand-500/10');
+            });
+            
+                const maskCtx = state.maskCanvas.getContext('2d');
+                
+                // Temporary Canvas untuk analisa piksel
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(state.originalImage, 0, 0);
+
+                const imgData = tempCtx.getImageData(0, 0, width, height);
+                const data = imgData.data;
+
+                // Masking ImageData
+                const maskData = maskCtx.createImageData(width, height);
+                const mData = maskData.data;
+
+                // Mengambil sampel warna di 4 sudut luar untuk estimasi warna background
+                const cornerColors = [
+                    getPixel(data, 0, 0, width),
+                    getPixel(data, width - 1, 0, width),
+                    getPixel(data, 0, height - 1, width),
+                    getPixel(data, width - 1, height - 1, width)
+                ];
+
+                const threshold = parseInt(aiThreshold.value) * 2.55;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    // Hitung jarak warna minimum ke sudut-sudut background
+                    let minDiff = 999;
+                    for (let c of cornerColors) {
+                        const diff = Math.sqrt(
+                            Math.pow(r - c.r, 2) + 
+                            Math.pow(g - c.g, 2) + 
+                            Math.pow(b - c.b, 2)
+                        );
+                        if (diff < minDiff) minDiff = diff;
+                    }
+
+        // --- Fullscreen API Handler ---
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    showToast(`Gagal mengaktifkan mode fullscreen: ${err.message}`, 'error');
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // --- File Handling & Processing ---
+        function handleFileSelect(file) {
+            if (!file.type.match('image.*')) {
+                showToast('Harap pilih file gambar yang valid (PNG, JPG, WebP).', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.originalImage = img;
+                    startEditor();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+                maskCtx.putImageData(maskData, 0, 0);
+
+                if (saveUndo) pushUndoState();
+                renderCanvas();
+                showLoading(false);
+                showToast('Latar belakang berhasil dihapus!', 'success');
+            }, 400);
+        }
+
+        function getPixel(data, x, y, width) {
+            const index = (y * width + x) * 4;
+            return { r: data[index], g: data[index + 1], b: data[index + 2] };
+        }
+
+        // --- Render Canvas utama dengan gabungan BG & Mask ---
+        function renderCanvas() {
+            if (!state.originalImage) return;
+
+            const w = state.originalImage.width;
+            const h = state.originalImage.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // 1. Gambar Latar Belakang Baru (jika ada)
+            if (state.bgType === 'color') {
+                ctx.fillStyle = state.bgColor;
+                ctx.fillRect(0, 0, w, h);
+            } else if (state.bgType === 'image' && state.bgImage) {
+                ctx.drawImage(state.bgImage, 0, 0, w, h);
+            }
+
+            // 2. Terapkan Masking Subjek Utama
+            // Buat buffer temporary untuk mengklip original image dengan mask
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = w;
+            tempCanvas.height = h;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Gambar mask
+            tempCtx.drawImage(state.maskCanvas, 0, 0);
+            // Ambil bagian potongan gambar dengan 'source-in'
+            tempCtx.globalCompositeOperation = 'source-in';
+            tempCtx.drawImage(state.originalImage, 0, 0);
+
+            // 3. Render potongan subjek ke kanvas utama
+            ctx.drawImage(tempCanvas, 0, 0);
+        }
+
+        // --- Interactive Drawing (Eraser & Restore Tools) ---
+        function initCanvasDrawing() {
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+
+            function getCanvasCoordinates(e) {
+                const rect = mainCanvas.getBoundingClientRect();
+                const scaleX = mainCanvas.width / rect.width;
+                const scaleY = mainCanvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function startDraw(e) {
+                if (state.activeMode !== 'manual') return;
+                isDrawing = true;
+                const coords = getCanvasCoordinates(e);
+                lastX = coords.x;
+                lastY = coords.y;
+                draw(e);
+            }
+
+            function draw(e) {
+                if (!isDrawing || state.activeMode !== 'manual') return;
+                if (e.cancelable) e.preventDefault();
+
+                const coords = getCanvasCoordinates(e);
+                const maskCtx = state.maskCanvas.getContext('2d');
+
+                maskCtx.lineWidth = state.brushSize;
+                maskCtx.lineCap = 'round';
+                maskCtx.lineJoin = 'round';
+
+                if (state.activeTool === 'erase') {
+                    maskCtx.globalCompositeOperation = 'destination-out';
+                    maskCtx.beginPath();
+                    maskCtx.moveTo(lastX, lastY);
+                    maskCtx.lineTo(coords.x, coords.y);
+                    maskCtx.stroke();
+                } else if (state.activeTool === 'restore') {
+                    maskCtx.globalCompositeOperation = 'source-over';
+                    maskCtx.fillStyle = '#ffffff';
+                    maskCtx.strokeStyle = '#ffffff';
+                    maskCtx.beginPath();
+                    maskCtx.moveTo(lastX, lastY);
+                    maskCtx.lineTo(coords.x, coords.y);
+                    maskCtx.stroke();
+                }
+
+                lastX = coords.x;
+                lastY = coords.y;
+
+                renderCanvas();
+            }
+
+            function stopDraw() {
+                if (isDrawing) {
+                    isDrawing = false;
+                    pushUndoState();
+                }
+            }
+
+            // Mouse Listener
+            mainCanvas.addEventListener('mousedown', startDraw);
+            mainCanvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stopDraw);
+
+            // Touch Listener untuk Mobile/Tablet
+            mainCanvas.addEventListener('touchstart', startDraw, { passive: false });
+            mainCanvas.addEventListener('touchmove', draw, { passive: false });
+            window.addEventListener('touchend', stopDraw);
+        }
+
+        // --- Perbandingan (Compare Slider) ---
+        function initCompareSlider() {
+            let isDragging = false;
+
+            const handleMove = (clientX) => {
+                if (!isDragging || state.activeMode !== 'compare') return;
+                const rect = canvasWrapper.getBoundingClientRect();
+                let offsetX = clientX - rect.left;
+                if (offsetX < 0) offsetX = 0;
+                if (offsetX > rect.width) offsetX = rect.width;
+
+                const percentage = (offsetX / rect.width) * 100;
+                compareDivider.style.left = percentage + '%';
+                compareOrigImg.style.clipPath = `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`;
+            };
+
+            compareDivider.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mousemove', (e) => handleMove(e.clientX));
+
+            // Touch events for compare slider
+            compareDivider.addEventListener('touchstart', () => isDragging = true, { passive: true });
+            window.addEventListener('touchend', () => isDragging = false);
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches[0]) {
+                    handleMove(e.touches[0].clientX);
+                }
+            }, { passive: true });
+        }
+
+        // --- Set Modes & Background Types ---
+        function setMode(mode) {
+            state.activeMode = mode;
+
+            // Reset Tab UI
+            modeAutoBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-white';
+            modeManualBtn.className = modeAutoBtn.className;
+            modeCompareBtn.className = modeAutoBtn.className;
+
+            manualTools.classList.add('hidden');
+            manualTools.classList.remove('flex');
+            compareSliderContainer.classList.add('hidden');
+
+            if (mode === 'auto') {
+                modeAutoBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-brand-600 text-white shadow-sm';
+            } else if (mode === 'manual') {
+                modeManualBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-brand-600 text-white shadow-sm';
+                manualTools.classList.remove('hidden');
+                manualTools.classList.add('flex');
+                showToast('Gunakan kursor untuk menghapus atau memulihkan area secara manual.', 'info');
+            } else if (mode === 'compare') {
+                modeCompareBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-brand-600 text-white shadow-sm';
+                compareSliderContainer.classList.remove('hidden');
+            }
+        }
+
+        function setTool(tool) {
+            state.activeTool = tool;
+            if (tool === 'erase') {
+                toolErase.className = 'p-1.5 px-2.5 rounded-lg text-xs bg-slate-700 text-white flex items-center gap-1';
+                toolRestore.className = 'p-1.5 px-2.5 rounded-lg text-xs text-slate-400 hover:text-white flex items-center gap-1';
+            } else {
+                toolRestore.className = 'p-1.5 px-2.5 rounded-lg text-xs bg-slate-700 text-white flex items-center gap-1';
+                toolErase.className = 'p-1.5 px-2.5 rounded-lg text-xs text-slate-400 hover:text-white flex items-center gap-1';
+            }
+        }
+
+        function setBgType(type) {
+            state.bgType = type;
+
+            bgTabTransparent.className = 'text-slate-400 hover:text-white font-medium py-1.5 rounded-lg transition';
+            bgTabColor.className = bgTabTransparent.className;
+            bgTabImage.className = bgTabTransparent.className;
+
+            bgColorOptions.classList.add('hidden');
+            bgColorOptions.classList.remove('flex');
+            bgImageOptions.classList.add('hidden');
+            bgImageOptions.classList.remove('flex');
+
+            if (type === 'transparent') {
+                bgTabTransparent.className = 'bg-slate-800 text-white font-medium py-1.5 rounded-lg transition';
+            } else if (type === 'color') {
+                bgTabColor.className = 'bg-slate-800 text-white font-medium py-1.5 rounded-lg transition';
+                bgColorOptions.classList.remove('hidden');
+                bgColorOptions.classList.add('flex');
+            } else if (type === 'image') {
+                bgTabImage.className = 'bg-slate-800 text-white font-medium py-1.5 rounded-lg transition';
+                bgImageOptions.classList.remove('hidden');
+                bgImageOptions.classList.add('flex');
+            }
+            renderCanvas();
+        }
+
+        function setZoom(val) {
+            state.zoom = Math.max(0.5, Math.min(3, val));
+            canvasWrapper.style.transform = `scale(${state.zoom})`;
+            zoomVal.textContent = Math.round(state.zoom * 100) + '%';
+        }
+
+        // --- Undo / Redo Management ---
+        function pushUndoState() {
+            if (!state.maskCanvas) return;
+            const maskCtx = state.maskCanvas.getContext('2d');
+            const imgData = maskCtx.getImageData(0, 0, state.maskCanvas.width, state.maskCanvas.height);
+
+            state.undoStack.push(imgData);
+            if (state.undoStack.length > state.maxUndo) {
+                state.undoStack.shift();
+            }
+            state.redoStack = []; // Clear redo stack on new action
+        }
+
+        function undo() {
+            if (state.undoStack.length > 1) {
+                state.redoStack.push(state.undoStack.pop());
+                const prevState = state.undoStack[state.undoStack.length - 1];
+                const maskCtx = state.maskCanvas.getContext('2d');
+                maskCtx.putImageData(prevState, 0, 0);
+                renderCanvas();
+                showToast('Undo berhasil dilakukan.', 'info');
+            }
+        }
+
+        function redo() {
+            if (state.redoStack.length > 0) {
+                const nextState = state.redoStack.pop();
+                state.undoStack.push(nextState);
+                const maskCtx = state.maskCanvas.getContext('2d');
+                maskCtx.putImageData(nextState, 0, 0);
+                renderCanvas();
+                showToast('Redo berhasil dilakukan.', 'info');
+            }
+        }
+
+        // --- Export & Reset ---
+        function exportImage(format) {
+            if (!mainCanvas) return;
+
+            const link = document.createElement('a');
+            const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+            const fileName = `bg-removed-${Date.now()}.${format}`;
+
+            link.download = fileName;
+            link.href = mainCanvas.toDataURL(mimeType, 0.95);
+            link.click();
+
+            showToast(`Gambar berhasil diunduh (${format.toUpperCase()})`, 'success');
+        }
+
+        function resetApp() {
+            state.originalImage = null;
+            state.maskCanvas = null;
+            state.bgImage = null;
+            state.undoStack = [];
+            state.redoStack = [];
+
+            fileInput.value = '';
+            customBgInput.value = '';
+            
+            editorSection.classList.add('hidden');
+            editorSection.classList.remove('flex');
+            uploadSection.classList.remove('hidden');
+            resetAppBtn.classList.add('hidden');
+            resetAppBtn.classList.remove('flex');
+
+            setZoom(1);
+            setMode('auto');
+            setBgType('transparent');
+        }
+
+        // --- UI Helpers ---
+        function showLoading(show, title = '', desc = '') {
+            if (show) {
+                loadingTitle.textContent = title;
+                loadingDesc.textContent = desc;
+                aiLoading.classList.remove('hidden');
+            } else {
+                aiLoading.classList.add('hidden');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.textContent = message;
+
+            if (type === 'success') {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+            } else if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-xmark text-red-400';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-info text-brand-400';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
